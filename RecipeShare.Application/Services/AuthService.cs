@@ -29,10 +29,10 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         if (await _userRepository.EmailExistsAsync(request.Email))
-            throw new BadRequestException("Email je već zauzet.");
+            throw new BadRequestException("Email is already taken.");
 
         if (await _userRepository.UsernameExistsAsync(request.Username))
-            throw new BadRequestException("Username je već zauzet.");
+            throw new BadRequestException("Username is already taken.");
 
         var user = new User
         {
@@ -58,14 +58,13 @@ public class AuthService : IAuthService
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
-            throw new UnauthorizedException("Krivi email ili lozinka.");
+            throw new UnauthorizedException("Invalid email or password.");
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (result == PasswordVerificationResult.Failed)
-            throw new UnauthorizedException("Krivi email ili lozinka.");
-
+            throw new UnauthorizedException("Invalid email or password.");
         if (user.IsBlocked)
-            throw new ForbiddenException("Vaš račun je blokiran.");
+            throw new ForbiddenException("Your account is blocked.");
 
         return new AuthResponse
         {
