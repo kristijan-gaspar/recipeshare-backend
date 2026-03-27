@@ -72,6 +72,7 @@ RecipeShare/
 │   └── DependencyInjection.cs           # DI registration for all services
 └── RecipeShare.API/                     # Entry point
     ├── Controllers/
+    ├── Extensions/                      # ClaimsPrincipal extension methods
     ├── Middleware/                       # Exception handling middleware
     ├── Program.cs
     ├── appsettings.json
