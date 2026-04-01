@@ -23,4 +23,14 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await _dbSet.AnyAsync(u => u.Username == username);
     }
+
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    }
+
+    public async Task<User?> GetProfileByIdAsync(int id)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+    }
 }
