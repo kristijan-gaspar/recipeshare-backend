@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using RecipeShare.API.Middleware;
 using RecipeShare.Infrastructure;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Infrastructure + Application DI registration
@@ -65,6 +66,7 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseStaticFiles();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
