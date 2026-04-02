@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using RecipeShare.Application.Exceptions;
 using RecipeShare.Domain.Enums;
 
 namespace RecipeShare.API.Extensions
@@ -9,14 +10,14 @@ namespace RecipeShare.API.Extensions
         {
             var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             return userIdClaim != null ? int.Parse(userIdClaim.Value) :
-                throw new UnauthorizedAccessException("User is not authenticated");
+                throw new UnauthorizedException("User is not authenticated");
         }
 
         public static UserRole GetUserRole(this ClaimsPrincipal user)
         {
             var roleClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
             return roleClaim != null ? Enum.Parse<UserRole>(roleClaim.Value) :
-                throw new UnauthorizedAccessException("User is not authenticated");
+                throw new UnauthorizedException("User is not authenticated");
         }
 
     }
