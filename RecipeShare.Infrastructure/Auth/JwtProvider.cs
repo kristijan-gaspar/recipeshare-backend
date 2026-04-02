@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using RecipeShare.Application.DTOs.Auth;
 using RecipeShare.Application.Interfaces.Services;
 using RecipeShare.Domain.Entities;
 
@@ -17,7 +18,7 @@ public class JwtProvider : IJwtProvider
         _settings = config.GetSection("Jwt").Get<JwtSettings>()!;
     }
 
-    public string GenerateToken(User user)
+    public TokenResult GenerateToken(User user)
     {
         var claims = new[]
         {
@@ -29,14 +30,20 @@ public class JwtProvider : IJwtProvider
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiresAt = DateTime.UtcNow.AddMinutes(_settings.ExpirationMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _settings.Issuer,
             audience: _settings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_settings.ExpirationMinutes),
+            expires: expiresAt,
             signingCredentials: creds);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenResult = new TokenResult(
+            new JwtSecurityTokenHandler().WriteToken(token),
+            expiresAt
+        );
+
+        return tokenResult;
     }
 }

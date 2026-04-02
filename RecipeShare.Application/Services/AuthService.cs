@@ -45,9 +45,12 @@ public class AuthService : IAuthService
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
+        var tokenResult = _jwtProvider.GenerateToken(user);
+
         return new AuthResponse
         {
-            Token = _jwtProvider.GenerateToken(user),
+            Token = tokenResult.Token,
+            ExpiresAt = tokenResult.ExpiresAt,
             UserId = user.Id,
             Username = user.Username,
             Role = user.Role
@@ -66,9 +69,11 @@ public class AuthService : IAuthService
         if (user.IsBlocked)
             throw new ForbiddenException("Your account is blocked.");
 
+        var tokenResult = _jwtProvider.GenerateToken(user);
         return new AuthResponse
         {
-            Token = _jwtProvider.GenerateToken(user),
+            Token = tokenResult.Token,
+            ExpiresAt = tokenResult.ExpiresAt,
             UserId = user.Id,
             Username = user.Username,
             Role = user.Role

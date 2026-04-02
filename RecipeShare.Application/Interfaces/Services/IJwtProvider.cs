@@ -1,8 +1,9 @@
+using RecipeShare.Application.DTOs.Auth;
 using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Application.Interfaces.Services;
 
 public interface IJwtProvider
 {
-    string GenerateToken(User user);
+    TokenResult GenerateToken(User user);
 }
