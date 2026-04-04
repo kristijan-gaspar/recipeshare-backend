@@ -9,4 +9,6 @@ public class AuthResponse
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
     public UserRole Role { get; set; }
+    public string RefreshToken { get; set; } = string.Empty;
+    public DateTime RefreshTokenExpiresAt { get; set; }
 }
