@@ -90,8 +90,15 @@ public class AuthService : IAuthService
         var hash = HashToken(request.RefreshToken);
         var storedToken = await _refreshTokenRepository.GetByTokenHashAsync(hash);
 
-        if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt <= DateTime.UtcNow)
+        if (storedToken == null || storedToken.ExpiresAt <= DateTime.UtcNow)
+        {
+            if (storedToken != null)
+            {
+                _refreshTokenRepository.Delete(storedToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
             throw new UnauthorizedException("Invalid or expired refresh token.");
+        }
 
         var user = await _userRepository.GetByIdAsync(storedToken.UserId);
         if (user == null)
@@ -99,12 +106,12 @@ public class AuthService : IAuthService
 
         if (user.IsBlocked)
         {
-            storedToken.IsRevoked = true;
+            _refreshTokenRepository.Delete(storedToken);
             await _unitOfWork.SaveChangesAsync();
             throw new ForbiddenException("Your account is blocked.");
         }
 
-        storedToken.IsRevoked = true;
+        _refreshTokenRepository.Delete(storedToken);
 
         var tokenResult = _jwtProvider.GenerateToken(user);
         var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
@@ -122,10 +129,10 @@ public class AuthService : IAuthService
         var hash = HashToken(refreshToken);
         var storedToken = await _refreshTokenRepository.GetByTokenHashAsync(hash);
 
-        if (storedToken == null || storedToken.IsRevoked)
+        if (storedToken == null)
             return;
 
-        storedToken.IsRevoked = true;
+        _refreshTokenRepository.Delete(storedToken);
         await _unitOfWork.SaveChangesAsync();
     }
 

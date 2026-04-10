@@ -25,19 +25,17 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             .FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
     }
 
-    public async Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId)
+    public void Delete(RefreshToken token)
     {
-        return await _context.RefreshTokens
-            .Where(r => r.UserId == userId && !r.IsRevoked && r.ExpiresAt > DateTime.UtcNow)
-            .ToListAsync();
+        _context.RefreshTokens.Remove(token);
     }
 
-    public async Task RevokeAllByUserIdAsync(int userId)
+    public async Task DeleteAllByUserIdAsync(int userId)
     {
-        var activeTokens = await GetActiveByUserIdAsync(userId);
-        foreach (var token in activeTokens)
-        {
-            token.IsRevoked = true;
-        }
+        var tokens = await _context.RefreshTokens
+            .Where(r => r.UserId == userId)
+            .ToListAsync();
+
+        _context.RefreshTokens.RemoveRange(tokens);
     }
 }
