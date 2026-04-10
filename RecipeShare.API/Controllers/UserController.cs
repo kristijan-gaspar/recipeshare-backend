@@ -7,7 +7,7 @@ using RecipeShare.Application.Interfaces.Services;
 namespace RecipeShare.API.Controllers;
 
 [ApiController]
-[Route("api/users")]
+[Route("api/user")]
 [Authorize]
 public class UserController : ControllerBase
 {
@@ -18,7 +18,7 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet("me")]
+    [HttpGet]
     public async Task<ActionResult<UserProfileResponse>> GetMyProfile()
     {
         var currentUserId = User.GetUserId();
@@ -38,7 +38,7 @@ public class UserController : ControllerBase
         return Ok(profile);
     }
 
-    [HttpPut("me")]
+    [HttpPut]
     public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequest request)
     {
         var currentUserId = User.GetUserId();
@@ -46,7 +46,7 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("me/password")]
+    [HttpPut("password")]
     public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordRequest request)
     {
         var currentUserId = User.GetUserId();
@@ -54,7 +54,7 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("me/email")]
+    [HttpPut("email")]
     public async Task<IActionResult> ChangeMyEmail([FromBody] ChangeEmailRequest request)
     {
         var currentUserId = User.GetUserId();
@@ -62,7 +62,7 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("me/image")]
+    [HttpPut("image")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateMyProfileImage(IFormFile image)
     {
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("me/image")]
+    [HttpDelete("image")]
     public async Task<IActionResult> DeleteMyProfileImage()
     {
         var currentUserId = User.GetUserId();
