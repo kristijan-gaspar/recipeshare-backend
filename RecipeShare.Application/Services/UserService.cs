@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using RecipeShare.Application.Constants;
 using RecipeShare.Application.DTOs.Users;
 using RecipeShare.Application.Exceptions;
@@ -10,31 +11,37 @@ namespace RecipeShare.Application.Services;
 
 public class UserService : IUserService
 {
+    private const string UserNotFoundMessage = "User not found.";
+    private const string CurrentPasswordIncorrectMessage = "Current password is incorrect.";
+
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IImageStorageService _imageStorageService;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
         IImageStorageService imageStorageService,
-        IPasswordHasher<User> passwordHasher)
+        IPasswordHasher<User> passwordHasher,
+        ILogger<UserService> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
         _imageStorageService = imageStorageService;
         _passwordHasher = passwordHasher;
+        _logger = logger;
     }
 
     public async Task<UserProfileResponse> GetProfileAsync(int userId, int? currentUserId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         return new UserProfileResponse
         {
@@ -53,7 +60,7 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         var normalizedUsername = request.Username.ToLowerInvariant();
         if (!string.Equals(user.Username, normalizedUsername, StringComparison.Ordinal))
@@ -74,13 +81,13 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         var verification = _passwordHasher.VerifyHashedPassword(
             user, user.PasswordHash, request.CurrentPassword);
 
         if (verification == PasswordVerificationResult.Failed)
-            throw new UnauthorizedException("Current password is incorrect.");
+            throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
 
@@ -93,13 +100,13 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         var verification = _passwordHasher.VerifyHashedPassword(
             user, user.PasswordHash, request.CurrentPassword);
 
         if (verification == PasswordVerificationResult.Failed)
-            throw new UnauthorizedException("Current password is incorrect.");
+            throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
 
         var normalizedEmail = request.NewEmail.ToLowerInvariant();
         if (string.Equals(user.Email, normalizedEmail, StringComparison.Ordinal))
@@ -127,7 +134,7 @@ public class UserService : IUserService
 
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         var oldImageUrl = user.ProfileImageUrl;
 
@@ -142,10 +149,9 @@ public class UserService : IUserService
             {
                 await _imageStorageService.DeleteAsync(oldImageUrl);
             }
-            catch
+            catch (Exception ex)
             {
-                // Best-effort cleanup. An orphan file is recoverable;
-                // failing the request because of cleanup is not.
+                _logger.LogWarning(ex, "Failed to delete old profile image {ImageUrl} for user {UserId}.", oldImageUrl, userId);
             }
         }
     }
@@ -154,7 +160,7 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(UserNotFoundMessage);
 
         if (string.IsNullOrWhiteSpace(user.ProfileImageUrl))
             return;
@@ -169,10 +175,9 @@ public class UserService : IUserService
         {
             await _imageStorageService.DeleteAsync(oldImageUrl);
         }
-        catch
+        catch (Exception ex)
         {
-            // Best-effort cleanup. DB is the source of truth;
-            // an orphan file is recoverable.
+            _logger.LogWarning(ex, "Failed to delete profile image {ImageUrl} for user {UserId}.", oldImageUrl, userId);
         }
     }
 }
