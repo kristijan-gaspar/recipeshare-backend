@@ -51,18 +51,13 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync();
 
         var tokenResult = _jwtProvider.GenerateToken(user);
-        var (rawRefreshToken, refreshExpiresAt) = await CreateRefreshTokenAsync(user.Id);
+        var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
             Token = tokenResult.Token,
-            ExpiresAt = tokenResult.ExpiresAt,
-            UserId = user.Id,
-            Username = user.Username,
-            Role = user.Role,
-            RefreshToken = rawRefreshToken,
-            RefreshTokenExpiresAt = refreshExpiresAt
+            RefreshToken = rawRefreshToken
         };
     }
 
@@ -80,18 +75,13 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Invalid email or password.");
 
         var tokenResult = _jwtProvider.GenerateToken(user);
-        var (rawRefreshToken, refreshExpiresAt) = await CreateRefreshTokenAsync(user.Id);
+        var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
             Token = tokenResult.Token,
-            ExpiresAt = tokenResult.ExpiresAt,
-            UserId = user.Id,
-            Username = user.Username,
-            Role = user.Role,
-            RefreshToken = rawRefreshToken,
-            RefreshTokenExpiresAt = refreshExpiresAt
+            RefreshToken = rawRefreshToken
         };
     }
 
@@ -117,18 +107,13 @@ public class AuthService : IAuthService
         storedToken.IsRevoked = true;
 
         var tokenResult = _jwtProvider.GenerateToken(user);
-        var (rawRefreshToken, refreshExpiresAt) = await CreateRefreshTokenAsync(user.Id);
+        var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
             Token = tokenResult.Token,
-            ExpiresAt = tokenResult.ExpiresAt,
-            UserId = user.Id,
-            Username = user.Username,
-            Role = user.Role,
-            RefreshToken = rawRefreshToken,
-            RefreshTokenExpiresAt = refreshExpiresAt
+            RefreshToken = rawRefreshToken
         };
     }
 
@@ -144,20 +129,19 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    private async Task<(string rawToken, DateTime expiresAt)> CreateRefreshTokenAsync(int userId)
+    private async Task<string> CreateRefreshTokenAsync(int userId)
     {
         var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        var expiresAt = DateTime.UtcNow.AddDays(7);
 
         var refreshToken = new RefreshToken
         {
             TokenHash = HashToken(rawToken),
             UserId = userId,
-            ExpiresAt = expiresAt
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
         };
 
         await _refreshTokenRepository.AddAsync(refreshToken);
-        return (rawToken, expiresAt);
+        return rawToken;
     }
 
     private static string HashToken(string token)
