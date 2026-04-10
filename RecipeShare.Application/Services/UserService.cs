@@ -127,15 +127,25 @@ public class UserService : IUserService
         if (user == null)
             throw new NotFoundException("User not found.");
 
-        if (!string.IsNullOrWhiteSpace(user.ProfileImageUrl))
-        {
-            await _imageStorageService.DeleteAsync(user.ProfileImageUrl);
-        }
+        var oldImageUrl = user.ProfileImageUrl;
 
         user.ProfileImageUrl = await _imageStorageService.UploadAsync(image, fileName);
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(oldImageUrl))
+        {
+            try
+            {
+                await _imageStorageService.DeleteAsync(oldImageUrl);
+            }
+            catch
+            {
+                // Best-effort cleanup. An orphan file is recoverable;
+                // failing the request because of cleanup is not.
+            }
+        }
     }
 
     public async Task DeleteProfileImageAsync(int userId)
@@ -147,11 +157,20 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(user.ProfileImageUrl))
             return;
 
-        await _imageStorageService.DeleteAsync(user.ProfileImageUrl);
-
+        var oldImageUrl = user.ProfileImageUrl;
         user.ProfileImageUrl = null;
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
+
+        try
+        {
+            await _imageStorageService.DeleteAsync(oldImageUrl);
+        }
+        catch
+        {
+            // Best-effort cleanup. DB is the source of truth;
+            // an orphan file is recoverable.
+        }
     }
 }
