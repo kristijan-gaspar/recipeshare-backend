@@ -39,9 +39,7 @@ public class UserService : IUserService
 
     public async Task<UserProfileResponse> GetProfileAsync(int userId, int? currentUserId)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
+        var user = await GetUserOrThrowAsync(userId);
 
         return new UserProfileResponse
         {
@@ -58,9 +56,7 @@ public class UserService : IUserService
 
     public async Task UpdateProfileAsync(int userId, UpdateProfileRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
+        var user = await GetUserOrThrowAsync(userId);
 
         var normalizedUsername = request.Username.ToLowerInvariant();
         if (!string.Equals(user.Username, normalizedUsername, StringComparison.Ordinal))
@@ -79,15 +75,8 @@ public class UserService : IUserService
 
     public async Task ChangePasswordAsync(int userId, ChangePasswordRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
-
-        var verification = _passwordHasher.VerifyHashedPassword(
-            user, user.PasswordHash, request.CurrentPassword);
-
-        if (verification == PasswordVerificationResult.Failed)
-            throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
+        var user = await GetUserOrThrowAsync(userId);
+        VerifyCurrentPassword(user, request.CurrentPassword);
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
 
@@ -98,15 +87,8 @@ public class UserService : IUserService
 
     public async Task ChangeEmailAsync(int userId, ChangeEmailRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
-
-        var verification = _passwordHasher.VerifyHashedPassword(
-            user, user.PasswordHash, request.CurrentPassword);
-
-        if (verification == PasswordVerificationResult.Failed)
-            throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
+        var user = await GetUserOrThrowAsync(userId);
+        VerifyCurrentPassword(user, request.CurrentPassword);
 
         var normalizedEmail = request.NewEmail.ToLowerInvariant();
         if (string.Equals(user.Email, normalizedEmail, StringComparison.Ordinal))
@@ -132,9 +114,7 @@ public class UserService : IUserService
         if (image.Length > ImageValidation.MaxFileSizeBytes)
             throw new BadRequestException("Maximum image size is 5 MB.");
 
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
+        var user = await GetUserOrThrowAsync(userId);
 
         var oldImageUrl = user.ProfileImageUrl;
 
@@ -158,9 +138,7 @@ public class UserService : IUserService
 
     public async Task DeleteProfileImageAsync(int userId)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new NotFoundException(UserNotFoundMessage);
+        var user = await GetUserOrThrowAsync(userId);
 
         if (string.IsNullOrWhiteSpace(user.ProfileImageUrl))
             return;
@@ -179,5 +157,20 @@ public class UserService : IUserService
         {
             _logger.LogWarning(ex, "Failed to delete profile image {ImageUrl} for user {UserId}.", oldImageUrl, userId);
         }
+    }
+
+    private async Task<User> GetUserOrThrowAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new NotFoundException(UserNotFoundMessage);
+        return user;
+    }
+
+    private void VerifyCurrentPassword(User user, string currentPassword)
+    {
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, currentPassword);
+        if (result == PasswordVerificationResult.Failed)
+            throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
     }
 }
