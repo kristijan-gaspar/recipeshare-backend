@@ -23,7 +23,7 @@ public class UserService : IUserService
 
     public async Task<UserProfileResponse> GetProfileAsync(int userId, int? currentUserId)
     {
-        var user = await _userRepository.GetProfileByIdAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             throw new NotFoundException("User not found.");
 
