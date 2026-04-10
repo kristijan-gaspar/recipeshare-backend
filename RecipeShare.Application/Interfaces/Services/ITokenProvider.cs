@@ -3,7 +3,8 @@ using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Application.Interfaces.Services;
 
-public interface IJwtProvider
+public interface ITokenProvider
 {
-    TokenResult GenerateToken(User user);
+    string GenerateJwtToken(User user);
+    TokenResult GenerateRefreshToken();
 }

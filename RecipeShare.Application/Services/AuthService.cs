@@ -14,20 +14,20 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IJwtProvider _jwtProvider;
+    private readonly ITokenProvider _tokenProvider;
     private readonly IPasswordHasher<User> _passwordHasher;
 
     public AuthService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
-        IJwtProvider jwtProvider,
+        ITokenProvider tokenProvider,
         IPasswordHasher<User> passwordHasher)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
-        _jwtProvider = jwtProvider;
+        _tokenProvider = tokenProvider;
         _passwordHasher = passwordHasher;
     }
 
@@ -50,13 +50,13 @@ public class AuthService : IAuthService
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
-        var tokenResult = _jwtProvider.GenerateToken(user);
+        var jwtToken = _tokenProvider.GenerateJwtToken(user);
         var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
-            Token = tokenResult.Token,
+            Token = jwtToken,
             RefreshToken = rawRefreshToken
         };
     }
@@ -74,13 +74,13 @@ public class AuthService : IAuthService
         if (result == PasswordVerificationResult.Failed)
             throw new UnauthorizedException("Invalid email or password.");
 
-        var tokenResult = _jwtProvider.GenerateToken(user);
+        var jwtToken = _tokenProvider.GenerateJwtToken(user);
         var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
-            Token = tokenResult.Token,
+            Token = jwtToken,
             RefreshToken = rawRefreshToken
         };
     }
@@ -113,13 +113,13 @@ public class AuthService : IAuthService
 
         _refreshTokenRepository.Delete(storedToken);
 
-        var tokenResult = _jwtProvider.GenerateToken(user);
+        var jwtToken = _tokenProvider.GenerateJwtToken(user);
         var rawRefreshToken = await CreateRefreshTokenAsync(user.Id);
         await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse
         {
-            Token = tokenResult.Token,
+            Token = jwtToken,
             RefreshToken = rawRefreshToken
         };
     }
@@ -138,17 +138,17 @@ public class AuthService : IAuthService
 
     private async Task<string> CreateRefreshTokenAsync(int userId)
     {
-        var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var refreshTokenResult = _tokenProvider.GenerateRefreshToken();
 
         var refreshToken = new RefreshToken
         {
-            TokenHash = HashToken(rawToken),
+            TokenHash = HashToken(refreshTokenResult.Token),
             UserId = userId,
-            ExpiresAt = DateTime.UtcNow.AddDays(7)
+            ExpiresAt = refreshTokenResult.ExpiresAt
         };
 
         await _refreshTokenRepository.AddAsync(refreshToken);
-        return rawToken;
+        return refreshTokenResult.Token;
     }
 
     private static string HashToken(string token)

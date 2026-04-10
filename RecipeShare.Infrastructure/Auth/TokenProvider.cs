@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -9,16 +10,16 @@ using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Infrastructure.Auth;
 
-public class JwtProvider : IJwtProvider
+public class TokenProvider : ITokenProvider
 {
     private readonly JwtSettings _settings;
 
-    public JwtProvider(IConfiguration config)
+    public TokenProvider(IConfiguration config)
     {
         _settings = config.GetSection("Jwt").Get<JwtSettings>()!;
     }
 
-    public TokenResult GenerateToken(User user)
+    public string GenerateJwtToken(User user)
     {
         var claims = new[]
         {
@@ -39,11 +40,13 @@ public class JwtProvider : IJwtProvider
             expires: expiresAt,
             signingCredentials: creds);
 
-        var tokenResult = new TokenResult(
-            new JwtSecurityTokenHandler().WriteToken(token),
-            expiresAt
-        );
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 
-        return tokenResult;
+    public TokenResult GenerateRefreshToken()
+    {
+        var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var expiresAt = DateTime.UtcNow.AddDays(_settings.RefreshTokenExpirationDays);
+        return new TokenResult(rawToken, expiresAt);
     }
 }

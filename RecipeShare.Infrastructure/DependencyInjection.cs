@@ -34,7 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ITagRepository, TagRepository>();
 
         // Infrastructure services
-        services.AddScoped<IJwtProvider, JwtProvider>();
+        services.AddScoped<ITokenProvider, TokenProvider>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
 
