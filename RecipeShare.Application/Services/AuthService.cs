@@ -33,16 +33,19 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        if (await _userRepository.EmailExistsAsync(request.Email))
+        var normalizedEmail = request.Email.ToLowerInvariant();
+        var normalizedUsername = request.Username.ToLowerInvariant();
+
+        if (await _userRepository.EmailExistsAsync(normalizedEmail))
             throw new BadRequestException("Email is already taken.");
 
-        if (await _userRepository.UsernameExistsAsync(request.Username))
+        if (await _userRepository.UsernameExistsAsync(normalizedUsername))
             throw new BadRequestException("Username is already taken.");
 
         var user = new User
         {
-            Username = request.Username,
-            Email = request.Email
+            Username = normalizedUsername,
+            Email = normalizedEmail
         };
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
@@ -63,7 +66,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        var user = await _userRepository.GetByEmailAsync(request.Email.ToLowerInvariant());
         if (user == null)
             throw new UnauthorizedException("Invalid email or password.");
 

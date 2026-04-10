@@ -55,12 +55,13 @@ public class UserService : IUserService
         if (user == null)
             throw new NotFoundException("User not found.");
 
-        if (!string.Equals(user.Username, request.Username, StringComparison.Ordinal))
+        var normalizedUsername = request.Username.ToLowerInvariant();
+        if (!string.Equals(user.Username, normalizedUsername, StringComparison.Ordinal))
         {
-            if (await _userRepository.UsernameExistsAsync(request.Username))
+            if (await _userRepository.UsernameExistsAsync(normalizedUsername))
                 throw new BadRequestException("Username is already taken.");
 
-            user.Username = request.Username;
+            user.Username = normalizedUsername;
         }
 
         user.Bio = request.Bio;
@@ -100,13 +101,14 @@ public class UserService : IUserService
         if (verification == PasswordVerificationResult.Failed)
             throw new UnauthorizedException("Current password is incorrect.");
 
-        if (string.Equals(user.Email, request.NewEmail, StringComparison.OrdinalIgnoreCase))
+        var normalizedEmail = request.NewEmail.ToLowerInvariant();
+        if (string.Equals(user.Email, normalizedEmail, StringComparison.Ordinal))
             return;
 
-        if (await _userRepository.EmailExistsAsync(request.NewEmail))
+        if (await _userRepository.EmailExistsAsync(normalizedEmail))
             throw new BadRequestException("Email is already taken.");
 
-        user.Email = request.NewEmail;
+        user.Email = normalizedEmail;
 
         _userRepository.Update(user);
         await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
