@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RecipeShare.API.Extensions;
 using RecipeShare.Application.DTOs.Users;
 using RecipeShare.Application.Interfaces.Services;
 
@@ -21,7 +21,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserProfileResponse>> GetMyProfile()
     {
-        var currentUserId = GetCurrentUserId();
+        var currentUserId = User.GetUserId();
         var profile = await _userService.GetProfileAsync(currentUserId, currentUserId);
         return Ok(profile);
     }
@@ -30,73 +30,58 @@ public class UsersController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserProfileResponse>> GetById(int id)
     {
-        int? currentUserId = null;
-
-        if (User.Identity?.IsAuthenticated == true)
-        {
-            currentUserId = GetCurrentUserId();
-        }
+        int? currentUserId = User.Identity?.IsAuthenticated == true
+            ? User.GetUserId()
+            : null;
 
         var profile = await _userService.GetProfileAsync(id, currentUserId);
         return Ok(profile);
     }
 
     [HttpPut("me")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UpdateMyProfile(
-        [FromForm] UpdateProfileRequest request,
-        IFormFile? image)
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequest request)
     {
-        if (image is not null)
-        {
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-            var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+        var currentUserId = User.GetUserId();
+        await _userService.UpdateProfileAsync(currentUserId, request);
+        return NoContent();
+    }
 
-            if (!allowedExtensions.Contains(extension))
-            {
-                return BadRequest("Dozvoljeni formati slike su: .jpg, .jpeg, .png, .webp");
-            }
+    [HttpPut("me/password")]
+    public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordRequest request)
+    {
+        var currentUserId = User.GetUserId();
+        await _userService.ChangePasswordAsync(currentUserId, request);
+        return NoContent();
+    }
 
-            const long maxFileSize = 5 * 1024 * 1024; // 5 MB
-            if (image.Length > maxFileSize)
-            {
-                return BadRequest("Maksimalna veličina slike je 5 MB.");
-            }
-        }
+    [HttpPut("me/email")]
+    public async Task<IActionResult> ChangeMyEmail([FromBody] ChangeEmailRequest request)
+    {
+        var currentUserId = User.GetUserId();
+        await _userService.ChangeEmailAsync(currentUserId, request);
+        return NoContent();
+    }
 
-        var currentUserId = GetCurrentUserId();
+    [HttpPut("me/image")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UpdateMyProfileImage(IFormFile image)
+    {
+        if (image is null || image.Length == 0)
+            return BadRequest("Image file is required.");
 
-        Stream? imageStream = null;
-        string? imageName = null;
+        var currentUserId = User.GetUserId();
 
-        if (image is not null)
-        {
-            imageStream = image.OpenReadStream();
-            imageName = image.FileName;
-        }
-
-        try
-        {
-            await _userService.UpdateProfileAsync(currentUserId, request, imageStream, imageName);
-        }
-        finally
-        {
-            if (imageStream is not null)
-                await imageStream.DisposeAsync();
-        }
+        await using var imageStream = image.OpenReadStream();
+        await _userService.UpdateProfileImageAsync(currentUserId, imageStream, image.FileName);
 
         return NoContent();
     }
 
-    private int GetCurrentUserId()
+    [HttpDelete("me/image")]
+    public async Task<IActionResult> DeleteMyProfileImage()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("User ID nije pronađen u tokenu.");
-        }
-
-        return userId;
+        var currentUserId = User.GetUserId();
+        await _userService.DeleteProfileImageAsync(currentUserId);
+        return NoContent();
     }
 }
