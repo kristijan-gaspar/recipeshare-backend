@@ -5,7 +5,7 @@ namespace RecipeShare.Application.Interfaces.Services;
 
 public interface IImageStorageService
 {
-    Task<ImageUploadResult> UploadAsync(
+    Task<UploadedImage> UploadAsync(
         Stream imageStream,
         string fileName,
         ImageFolder folder,
