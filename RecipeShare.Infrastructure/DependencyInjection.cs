@@ -9,7 +9,6 @@ using RecipeShare.Domain.Entities;
 using RecipeShare.Infrastructure.Auth;
 using RecipeShare.Infrastructure.Data;
 using RecipeShare.Infrastructure.Repositories;
-using RecipeShare.Infrastructure.Services;
 
 namespace RecipeShare.Infrastructure;
 
@@ -36,7 +35,6 @@ public static class DependencyInjection
         // Infrastructure services
         services.AddScoped<ITokenProvider, TokenProvider>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-        services.AddScoped<IImageStorageService, LocalImageStorageService>();
 
         // Application services
         services.AddScoped<IAuthService, AuthService>();

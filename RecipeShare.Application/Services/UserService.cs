@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RecipeShare.Application.Constants;
 using RecipeShare.Application.DTOs.Users;
+using RecipeShare.Application.Enums;
 using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Repositories;
 using RecipeShare.Application.Interfaces.Services;
@@ -116,22 +117,24 @@ public class UserService : IUserService
 
         var user = await GetUserOrThrowAsync(userId);
 
-        var oldImageUrl = user.ProfileImageUrl;
+        var oldPublicId = user.ProfileImagePublicId;
 
-        user.ProfileImageUrl = await _imageStorageService.UploadAsync(image, fileName);
+        var uploaded = await _imageStorageService.UploadAsync(image, fileName, ImageFolder.Profiles);
+        user.ProfileImageUrl = uploaded.Url;
+        user.ProfileImagePublicId = uploaded.PublicId;
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
 
-        if (!string.IsNullOrWhiteSpace(oldImageUrl))
+        if (!string.IsNullOrWhiteSpace(oldPublicId))
         {
             try
             {
-                await _imageStorageService.DeleteAsync(oldImageUrl);
+                await _imageStorageService.DeleteAsync(oldPublicId);
             }
-            catch (Exception ex)
+            catch (ImageStorageException ex)
             {
-                _logger.LogWarning(ex, "Failed to delete old profile image {ImageUrl} for user {UserId}.", oldImageUrl, userId);
+                _logger.LogWarning(ex, "Failed to delete old profile image {PublicId} for user {UserId}.", oldPublicId, userId);
             }
         }
     }
@@ -140,22 +143,23 @@ public class UserService : IUserService
     {
         var user = await GetUserOrThrowAsync(userId);
 
-        if (string.IsNullOrWhiteSpace(user.ProfileImageUrl))
+        if (string.IsNullOrWhiteSpace(user.ProfileImagePublicId))
             return;
 
-        var oldImageUrl = user.ProfileImageUrl;
+        var oldPublicId = user.ProfileImagePublicId;
         user.ProfileImageUrl = null;
+        user.ProfileImagePublicId = null;
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
 
         try
         {
-            await _imageStorageService.DeleteAsync(oldImageUrl);
+            await _imageStorageService.DeleteAsync(oldPublicId);
         }
-        catch (Exception ex)
+        catch (ImageStorageException ex)
         {
-            _logger.LogWarning(ex, "Failed to delete profile image {ImageUrl} for user {UserId}.", oldImageUrl, userId);
+            _logger.LogWarning(ex, "Failed to delete profile image {PublicId} for user {UserId}.", oldPublicId, userId);
         }
     }
 
