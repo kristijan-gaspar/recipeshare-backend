@@ -29,6 +29,9 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUserRepository, UserRepository>();
 
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
+
         // Infrastructure services
         services.AddScoped<IJwtProvider, JwtProvider>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -37,6 +40,9 @@ public static class DependencyInjection
         // Application services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+
+        services.AddScoped<IAdminCategoryService, AdminCategoryService>();
+        services.AddScoped<IAdminTagService, AdminTagService>();
 
         return services;
     }
