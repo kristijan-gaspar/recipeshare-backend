@@ -39,11 +39,17 @@ public class ExceptionHandlingMiddleware
             context.Response.StatusCode = 404;
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
         }
+        catch (ImageStorageException ex)
+        {
+            _logger.LogError(ex, "Image storage failure");
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsJsonAsync(new { error = "Image storage is temporarily unavailable." });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
             context.Response.StatusCode = 500;
-            await context.Response.WriteAsJsonAsync(new { error = "Interna greška servera" });
+            await context.Response.WriteAsJsonAsync(new { error = "Internal server error." });
         }
     }
 }
