@@ -10,7 +10,7 @@ Backend API for RecipeShare — a social platform for sharing, discovering, and 
 - **Authentication:** JWT (JSON Web Tokens)
 - **Password Hashing:** ASP.NET Identity PasswordHasher (PBKDF2)
 - **Object Mapping:** Mapster
-- **Image Storage:** AWS S3
+- **Image Storage:** Cloudinary
 - **Push Notifications:** Firebase Cloud Messaging
 - **API Documentation:** Swagger / Swashbuckle
 
@@ -23,7 +23,7 @@ The project follows **Clean Architecture** with 4 layers. Dependencies always po
 │  API (Controllers, Middleware)            │  ← outermost
 ├──────────────────────────────────────────┤
 │  Infrastructure (EF Core, Repositories,  │
-│  JWT, S3, Firebase)                      │
+│  JWT, Cloudinary, Firebase)              │
 ├──────────────────────────────────────────┤
 │  Application (Services, DTOs,            │
 │  Interfaces, Exceptions)                 │
@@ -57,10 +57,12 @@ RecipeShare/
 │   └── Enums/
 ├── RecipeShare.Application/             # Business logic
 │   ├── DTOs/                            # Request/Response objects
+│   ├── Enums/                           # ImageFolder enum + extensions
 │   ├── Exceptions/                      # Custom exceptions (→ HTTP status codes)
 │   ├── Interfaces/
 │   │   ├── Repositories/                # Repository + UnitOfWork interfaces
 │   │   └── Services/                    # Service interfaces
+│   ├── Mappings/                        # Mapster configuration
 │   └── Services/                        # Service implementations
 ├── RecipeShare.Infrastructure/          # Data access and external services
 │   ├── Auth/                            # JWT token generation
@@ -69,6 +71,7 @@ RecipeShare/
 │   │   ├── Configurations/              # EF Core Fluent API configurations
 │   │   └── Migrations/
 │   ├── Repositories/                    # Repository + UnitOfWork implementations
+│   ├── Storage/                         # Cloudinary image storage
 │   └── DependencyInjection.cs           # DI registration for all services
 └── RecipeShare.API/                     # Entry point
     ├── Controllers/
@@ -107,12 +110,22 @@ Create `RecipeShare.API/appsettings.Development.json` (this file is gitignored):
     "DefaultConnection": "Host=localhost;Database=recipeshare;Username=postgres;Password=yourpassword"
   },
   "Jwt": {
-    "Secret": "your-256-bit-secret-key-here-minimum-32-characters!!"
+    "Secret": "your-256-bit-secret-key-here-minimum-32-characters!!",
+    "Issuer": "RecipeShare",
+    "Audience": "RecipeShareApp",
+    "ExpirationMinutes": 15,
+    "RefreshTokenExpirationDays": 7
+  },
+  "Cloudinary": {
+    "CloudName": "your-cloud-name",
+    "ApiKey": "your-api-key",
+    "ApiSecret": "your-api-secret",
+    "RootFolder": "recipeshare"
   }
 }
 ```
 
-The `Jwt.Issuer`, `Jwt.Audience`, and `Jwt.ExpirationMinutes` values are already set in `appsettings.json` — only override them here if needed.
+Get Cloudinary credentials from your [Cloudinary Dashboard](https://console.cloudinary.com/).
 
 ### 3. Apply database migrations
 
@@ -139,6 +152,20 @@ Swagger UI is available at http://localhost:5285/swagger.
 | Method | Route | Description | Auth Required |
 |--------|-------|-------------|---------------|
 | POST | `/api/auth/register` | Register a new user | No |
-| POST | `/api/auth/login` | Log in and receive JWT token | No |
+| POST | `/api/auth/login` | Log in and receive JWT + refresh token | No |
+| POST | `/api/auth/refresh` | Exchange refresh token for new token pair | No |
+| POST | `/api/auth/logout` | Revoke a refresh token | Yes |
+
+### User Profile
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/user` | Get my profile | Yes |
+| GET | `/api/user/{id}` | Get user profile by ID | No |
+| PUT | `/api/user` | Update my profile | Yes |
+| PUT | `/api/user/password` | Change my password | Yes |
+| PUT | `/api/user/email` | Change my email | Yes |
+| PUT | `/api/user/image` | Upload/replace profile image (multipart/form-data) | Yes |
+| DELETE | `/api/user/image` | Delete my profile image | Yes |
 
 Protected endpoints require the `Authorization: Bearer {token}` header.
