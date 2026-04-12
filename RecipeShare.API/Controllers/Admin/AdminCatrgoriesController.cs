@@ -10,24 +10,24 @@ namespace RecipeShare.API.Controllers.Admin;
 [Authorize(Roles = "Admin")]
 public class AdminCategoriesController : ControllerBase
 {
-    private readonly IAdminCategoryService _categoryService;
+    private readonly ICategoryService _categoryService;
 
-    public AdminCategoriesController(IAdminCategoryService categoryService)
+    public AdminCategoriesController(ICategoryService categoryService)
     {
         _categoryService = categoryService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CategoryResponse>>> GetAll()
+    public async Task<ActionResult<List<AdminCategoryResponse>>> GetAll()
     {
-        var categories = await _categoryService.GetCategoriesAsync();
+        var categories = await _categoryService.GetAdminCategoriesAsync();
         return Ok(categories);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<CategoryResponse>> GetById(int id)
+    public async Task<ActionResult<AdminCategoryResponse>> GetById(int id)
     {
-        var category = await _categoryService.GetCategoryByIdAsync(id);
+        var category = await _categoryService.GetAdminCategoryByIdAsync(id);
         return Ok(category);
     }
 
@@ -49,6 +49,14 @@ public class AdminCategoriesController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         await _categoryService.DeleteCategoryAsync(id);
+        return NoContent();
+    }
+
+
+    [HttpPatch("{id:int}/toggle-IsActive")]
+    public async Task<IActionResult> ToggleIsActive(int id)
+    {
+        await _categoryService.ToggleActiveAsync(id);
         return NoContent();
     }
 }

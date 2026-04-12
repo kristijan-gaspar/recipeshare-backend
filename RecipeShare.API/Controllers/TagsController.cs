@@ -8,9 +8,9 @@ namespace RecipeShare.API.Controllers;
 [Route("api/tags")]
 public class TagsController : ControllerBase
 {
-    private readonly IAdminTagService _tagService;
+    private readonly ITagService _tagService;
 
-    public TagsController(IAdminTagService tagService)
+    public TagsController(ITagService tagService)
     {
         _tagService = tagService;
     }

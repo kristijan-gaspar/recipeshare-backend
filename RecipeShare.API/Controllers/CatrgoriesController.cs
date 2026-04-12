@@ -8,9 +8,9 @@ namespace RecipeShare.API.Controllers;
 [Route("api/categories")]
 public class CategoriesController : ControllerBase
 {
-    private readonly IAdminCategoryService _categoryService;
+    private readonly ICategoryService _categoryService;
 
-    public CategoriesController(IAdminCategoryService categoryService)
+    public CategoriesController(ICategoryService categoryService)
     {
         _categoryService = categoryService;
     }
