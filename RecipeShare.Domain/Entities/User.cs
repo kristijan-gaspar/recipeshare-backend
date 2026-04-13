@@ -9,6 +9,7 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? ProfileImageUrl { get; set; }
+    public string? ProfileImagePublicId { get; set; }
     public string? Bio { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
     public bool IsBlocked { get; set; } = false;

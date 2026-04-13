@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RecipeShare.Application.DTOs.Auth;
 
-public class AuthResponse
+public class RefreshTokenRequest
 {
-    public string Token { get; set; } = string.Empty;
+    [Required]
     public string RefreshToken { get; set; } = string.Empty;
 }

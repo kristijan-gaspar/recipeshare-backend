@@ -14,6 +14,11 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        return await _dbSet.FirstOrDefaultAsync(u => u.Username == username);
+    }
+
     public async Task<bool> EmailExistsAsync(string email)
     {
         return await _dbSet.AnyAsync(u => u.Email == email);
@@ -22,15 +27,5 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     public async Task<bool> UsernameExistsAsync(string username)
     {
         return await _dbSet.AnyAsync(u => u.Username == username);
-    }
-
-    public async Task<User?> GetByUsernameAsync(string username)
-    {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-    }
-
-    public async Task<User?> GetProfileByIdAsync(int id)
-    {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
 }

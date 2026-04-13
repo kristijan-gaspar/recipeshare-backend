@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT token u formatu: Bearer {token}",
+        Description = "JWT token in the format: Bearer {token}",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -66,7 +66,6 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseStaticFiles();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
