@@ -71,6 +71,8 @@ public class RecipeService : IRecipeService
         var tags = await _tagRepository.GetByIdsAsync(request.TagIds);
         if (tags.Count != request.TagIds.Distinct().Count())
             throw new NotFoundException("One or more tags not found.");
+        if (tags.Any(t => !t.IsActive))
+            throw new BadRequestException("One or more selected tags are not active.");
 
         var recipe = new Recipe
         {
@@ -120,6 +122,8 @@ public class RecipeService : IRecipeService
         var tags = await _tagRepository.GetByIdsAsync(request.TagIds);
         if (tags.Count != request.TagIds.Distinct().Count())
             throw new NotFoundException("One or more tags not found.");
+        if (tags.Any(t => !t.IsActive))
+            throw new BadRequestException("One or more selected tags are not active.");
 
         _recipeRepository.RemoveIngredients(recipe.Ingredients.ToList());
         _recipeRepository.RemoveSteps(recipe.Steps.ToList());

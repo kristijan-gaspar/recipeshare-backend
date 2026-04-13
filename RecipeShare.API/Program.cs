@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RecipeShare.API.Middleware;
+using RecipeShare.Application.Mappings;
 using RecipeShare.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Mapster custom mappings
+MappingConfig.Configure();
 
 // Infrastructure + Application DI registration
 builder.Services.AddInfrastructure(builder.Configuration);

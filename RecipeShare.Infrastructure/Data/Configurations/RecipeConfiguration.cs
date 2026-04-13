@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RecipeShare.Domain.Entities;
-using RecipeShare.Domain.Enums;
 
 namespace RecipeShare.Infrastructure.Data.Configurations;
 
@@ -11,7 +10,7 @@ public class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
     {
         builder.Property(r => r.Title)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(100);
 
         builder.Property(r => r.Description)
             .HasMaxLength(2000);
