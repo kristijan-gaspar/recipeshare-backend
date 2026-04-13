@@ -53,9 +53,9 @@ public class TagService : ITagService
     }
 
     //---Admin----
-    public async Task<List<AdminTagResponse>> GetAdminTagsAsync()
+    public async Task<List<AdminTagResponse>> GetAdminTagsAsync(string? searchTerm = null)
     {
-        var tags = await _tagRepo.GetAllAsync();
+        var tags = await _tagRepo.GetAllAsync(searchTerm);
 
         return tags.Select(t => new AdminTagResponse
             {

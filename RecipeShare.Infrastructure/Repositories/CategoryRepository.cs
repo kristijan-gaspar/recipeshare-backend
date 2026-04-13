@@ -16,9 +16,20 @@ internal class CategoryRepository : GenericRepository<Category>, ICategoryReposi
     {
     }
 
-    public async  Task<List<Category>> GetAllAsync()
+    public async  Task<List<Category>> GetAllAsync(string? searchTerm = null)
     {
-        return await _dbSet.ToListAsync();
+        var query = _dbSet.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var normalizedTerm = searchTerm.Trim().ToLower();
+
+            query = query.Where(c => c.Name.ToLower().Contains(normalizedTerm));
+        }
+
+        return await query
+            .OrderBy(c => c.Name)
+            .ToListAsync();
     }
 
     public async Task<bool> NameExistsAsync(string name)

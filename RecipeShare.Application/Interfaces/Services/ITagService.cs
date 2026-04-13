@@ -10,7 +10,7 @@ namespace RecipeShare.Application.Interfaces.Services;
 public interface ITagService
 {
     Task<List<TagResponse>> GetTagsAsync();
-    Task<List<AdminTagResponse>> GetAdminTagsAsync();
+    Task<List<AdminTagResponse>> GetAdminTagsAsync(string? searchTerm = null);
     Task<TagResponse> GetTagByIdAsync(int id);
     Task<AdminTagResponse> GetAdminTagByIdAsync(int id);
     Task<int> CreateTagAsync(CreateTagRequest request);

@@ -19,9 +19,9 @@ public class AdminTagsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<AdminTagResponse>>> GetAll()
+    public async Task<ActionResult<List<AdminTagResponse>>> GetAll(string? searchTerm = null)
     {
-        var tags = await _tagService.GetAdminTagsAsync();
+        var tags = await _tagService.GetAdminTagsAsync(searchTerm);
         return Ok(tags);
     }
 

@@ -8,9 +8,20 @@ public class TagRepository : GenericRepository<Tag>, ITagRepository
 {
     public TagRepository(AppDbContext context) : base(context) { }
 
-    public async Task<List<Tag>> GetAllAsync()
+    public async Task<List<Tag>> GetAllAsync(string? searchTerm = null)
     {
-        return await _dbSet.ToListAsync();
+        var query = _dbSet.AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            var normalizedTerm = searchTerm.Trim().ToLower();
+
+            query = query.Where(t => t.Name.Contains(normalizedTerm, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        return await query
+            .OrderBy(t => t.Name)
+            .ToListAsync();
     }
 
     public async Task<bool> NameExistsAsync(string name)

@@ -54,9 +54,9 @@ public class CategoryService : ICategoryService
 
 
     //----Admin----
-    public async Task<List<AdminCategoryResponse>> GetAdminCategoriesAsync()
+    public async Task<List<AdminCategoryResponse>> GetAdminCategoriesAsync(string? searchTerm)
     {
-        var categories = await _categoryRepo.GetAllAsync();
+        var categories = await _categoryRepo.GetAllAsync(searchTerm);
 
         return categories.Select(c => new AdminCategoryResponse
         {

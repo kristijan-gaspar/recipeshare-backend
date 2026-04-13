@@ -18,9 +18,9 @@ public class AdminCategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<AdminCategoryResponse>>> GetAll()
+    public async Task<ActionResult<List<AdminCategoryResponse>>> GetAll([FromQuery] string? searchTerm)
     {
-        var categories = await _categoryService.GetAdminCategoriesAsync();
+        var categories = await _categoryService.GetAdminCategoriesAsync(searchTerm);
         return Ok(categories);
     }
 

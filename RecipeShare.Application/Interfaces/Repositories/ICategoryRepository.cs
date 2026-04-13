@@ -10,6 +10,6 @@ namespace RecipeShare.Application.Interfaces.Repositories;
 
 public interface ICategoryRepository : IGenericRepository<Category>
 {
-    Task<List<Category>> GetAllAsync();
+    Task<List<Category>> GetAllAsync(string? searchTerm = null);
     Task<bool> NameExistsAsync(string name);
 }
