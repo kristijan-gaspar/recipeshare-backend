@@ -27,7 +27,7 @@ public static class MappingConfig
             })
             .Map(dest => dest.CategoryName, src => src.Category.Name)
             .Map(dest => dest.Tags, src => src.Tags.Select(t => t.Name).ToList())
-            .Map(dest => dest.Ingredients, src => src.Ingredients.OrderBy(i => i.Order))
-            .Map(dest => dest.Steps, src => src.Steps.OrderBy(s => s.Order));
+            .Map(dest => dest.Ingredients, src => src.Ingredients)
+            .Map(dest => dest.Steps, src => src.Steps);
     }
 }

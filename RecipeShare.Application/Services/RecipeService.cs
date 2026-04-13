@@ -46,7 +46,7 @@ public class RecipeService : IRecipeService
         return new CursorPagedResponse<RecipeSummaryResponse>
         {
             Items = mapped,
-            NextCursor = hasMore ? recipes.Last().Id : null,
+            NextCursor = hasMore ? recipes.LastOrDefault()?.Id : null,
             HasMore = hasMore
         };
     }

@@ -53,8 +53,8 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
             .Include(r => r.User)
             .Include(r => r.Category)
             .Include(r => r.Tags)
-            .Include(r => r.Ingredients)
-            .Include(r => r.Steps)
+            .Include(r => r.Ingredients.OrderBy(i => i.Order))
+            .Include(r => r.Steps.OrderBy(s => s.Order))
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
