@@ -11,22 +11,25 @@ using System.Threading.Tasks;
 
 namespace RecipeShare.Application.Services;
 
-public class AdminTagService : IAdminTagService
+public class TagService : ITagService
 {
     private readonly ITagRepository _tagRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AdminTagService(ITagRepository tagRepo, IUnitOfWork unitOfWork)
+    public TagService(ITagRepository tagRepo, IUnitOfWork unitOfWork)
     {
         _tagRepo = tagRepo;
         _unitOfWork = unitOfWork;
     }
 
+    //---User----
     public async Task<List<TagResponse>> GetTagsAsync()
     {
         var tags = await _tagRepo.GetAllAsync();
 
-        return tags.Select(t => new TagResponse
+        return tags
+            .Where(t => t.IsActive)
+            .Select(t => new TagResponse
         {
             Id = t.Id,
             Name = t.Name,
@@ -48,6 +51,41 @@ public class AdminTagService : IAdminTagService
             RecipeCount = 0
         };
     }
+
+    //---Admin----
+    public async Task<List<AdminTagResponse>> GetAdminTagsAsync()
+    {
+        var tags = await _tagRepo.GetAllAsync();
+
+        return tags.Select(t => new AdminTagResponse
+            {
+                Id = t.Id,
+                Name = t.Name,
+                RecipeCount = 0,
+                CreatedaAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt,
+                IsActive = t.IsActive
+        }).ToList();
+    }
+
+    public async Task<AdminTagResponse> GetAdminTagByIdAsync(int id)
+    {
+        var tag = await _tagRepo.GetByIdAsync(id);
+
+        if (tag == null)
+            throw new NotFoundException("Tag not found.");
+
+        return new AdminTagResponse
+        {
+            Id = tag.Id,
+            Name = tag.Name,
+            RecipeCount = 0,
+            CreatedaAt = tag.CreatedAt,
+            UpdatedAt = tag.UpdatedAt,
+            IsActive = tag.IsActive
+        };
+    }
+
     public async Task<int> CreateTagAsync(CreateTagRequest request)
     {
         var normalizedName = request.Name.Trim();
@@ -56,7 +94,8 @@ public class AdminTagService : IAdminTagService
 
         var tag = new Tag
         {
-            Name = normalizedName
+            Name = normalizedName,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _tagRepo.AddAsync(tag);
@@ -73,6 +112,8 @@ public class AdminTagService : IAdminTagService
             throw new NotFoundException("Tag not found.");
 
         var normalizedName = request.Name.Trim();
+
+        tag.UpdatedAt = DateTime.UtcNow;
 
         var nameExists = await _tagRepo.NameExistsAsync(normalizedName);
         if (nameExists && !string.Equals(tag.Name, normalizedName, StringComparison.OrdinalIgnoreCase))
@@ -94,6 +135,19 @@ public class AdminTagService : IAdminTagService
 
         _tagRepo.Delete(tag);
 
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ToggleActiveAsync(int id)
+    {
+        var tag = await _tagRepo.GetByIdAsync(id);
+
+        if (tag == null)
+            throw new NotFoundException("Category not found.");
+
+        tag.IsActive = !tag.IsActive;
+
+        _tagRepo.Update(tag);
         await _unitOfWork.SaveChangesAsync();
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RecipeShare.Application.DTOs.Tags;
 using RecipeShare.Application.Interfaces.Services;
+using RecipeShare.Application.Services;
 
 namespace RecipeShare.API.Controllers.Admin;
 
@@ -10,24 +11,24 @@ namespace RecipeShare.API.Controllers.Admin;
 [Authorize(Roles = "Admin")]
 public class AdminTagsController : ControllerBase
 {
-    private readonly IAdminTagService _tagService;
+    private readonly ITagService _tagService;
 
-    public AdminTagsController(IAdminTagService tagService)
+    public AdminTagsController(ITagService tagService)
     {
         _tagService = tagService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TagResponse>>> GetAll()
+    public async Task<ActionResult<List<AdminTagResponse>>> GetAll()
     {
-        var tags = await _tagService.GetTagsAsync();
+        var tags = await _tagService.GetAdminTagsAsync();
         return Ok(tags);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<TagResponse>> GetById(int id)
+    public async Task<ActionResult<AdminTagResponse>> GetById(int id)
     {
-        var tag = await _tagService.GetTagByIdAsync(id);
+        var tag = await _tagService.GetAdminTagByIdAsync(id);
         return Ok(tag);
     }
 
@@ -49,6 +50,13 @@ public class AdminTagsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         await _tagService.DeleteTagAsync(id);
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}/toggle-IsActive")]
+    public async Task<IActionResult> ToggleIsActive(int id)
+    {
+        await _tagService.ToggleActiveAsync(id);
         return NoContent();
     }
 }

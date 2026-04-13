@@ -10,28 +10,31 @@ using System.Linq;
 
 namespace RecipeShare.Application.Services;
 
-public class AdminCategoryService : IAdminCategoryService
+public class CategoryService : ICategoryService
 {
     private readonly ICategoryRepository _categoryRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AdminCategoryService(ICategoryRepository categoryRepo, IUnitOfWork unitOfWork)
+    public CategoryService(ICategoryRepository categoryRepo, IUnitOfWork unitOfWork)
     {
         _categoryRepo = categoryRepo;
         _unitOfWork = unitOfWork;
     }
 
+
+    //----User----
     public async Task<List<CategoryResponse>> GetCategoriesAsync()
     {
         var categories = await _categoryRepo.GetAllAsync();
 
-        return categories.Select(c => new CategoryResponse
+        return categories
+            .Where(c => c.IsActive)
+            .Select(c => new CategoryResponse
         {
             Id = c.Id,
             Name = c.Name,
             RecipeCount = 0
         }).ToList();
-
     }
 
     public async Task<CategoryResponse> GetCategoryByIdAsync(int id)
@@ -49,6 +52,42 @@ public class AdminCategoryService : IAdminCategoryService
         };
     }
 
+
+    //----Admin----
+    public async Task<List<AdminCategoryResponse>> GetAdminCategoriesAsync()
+    {
+        var categories = await _categoryRepo.GetAllAsync();
+
+        return categories.Select(c => new AdminCategoryResponse
+        {
+            Id = c.Id,
+            Name = c.Name,
+            RecipeCount = 0,
+            CreatedaAt = c.CreatedAt,
+            UpdatedAt = c.UpdatedAt,
+            IsActive = c.IsActive,
+        }).ToList();
+
+    }
+
+    public async Task<AdminCategoryResponse> GetAdminCategoryByIdAsync(int id)
+    {
+        var category = await _categoryRepo.GetByIdAsync(id);
+
+        if (category == null)
+            throw new NotFoundException("Category not found.");
+
+        return new AdminCategoryResponse
+        {
+            Id = category.Id,
+            Name = category.Name,
+            RecipeCount = 0,
+            CreatedaAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt,
+            IsActive = category.IsActive,
+        };
+    }
+
     public async Task<int> CreateCategoryAsync(CreateCategoryRequest request)
     {
         if(await _categoryRepo.NameExistsAsync(request.Name))
@@ -59,6 +98,7 @@ public class AdminCategoryService : IAdminCategoryService
         var category = new Category
         {
             Name = normalizedName,
+            CreatedAt = DateTime.UtcNow,
         };
 
         await _categoryRepo.AddAsync(category);
@@ -80,6 +120,8 @@ public class AdminCategoryService : IAdminCategoryService
         var normalizedName = request.Name.Trim();
         category.Name = normalizedName;
 
+        category.UpdatedAt = DateTime.UtcNow;
+
         _categoryRepo.Update(category);
 
         await _unitOfWork.SaveChangesAsync();
@@ -97,4 +139,16 @@ public class AdminCategoryService : IAdminCategoryService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task ToggleActiveAsync(int id)
+    {
+        var category = await _categoryRepo.GetByIdAsync(id);
+
+        if (category == null)
+            throw new NotFoundException("Category not found.");
+
+        category.IsActive = !category.IsActive;
+
+        _categoryRepo.Update(category);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

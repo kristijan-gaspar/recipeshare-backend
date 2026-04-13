@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace RecipeShare.Application.Interfaces.Services;
 
-public interface IAdminTagService
+public interface ITagService
 {
     Task<List<TagResponse>> GetTagsAsync();
+    Task<List<AdminTagResponse>> GetAdminTagsAsync();
     Task<TagResponse> GetTagByIdAsync(int id);
+    Task<AdminTagResponse> GetAdminTagByIdAsync(int id);
     Task<int> CreateTagAsync(CreateTagRequest request);
     Task UpdateTagAsync(int id, CreateTagRequest request);
     Task DeleteTagAsync(int id);
+    Task ToggleActiveAsync(int id);
 }
