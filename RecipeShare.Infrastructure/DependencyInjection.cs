@@ -34,6 +34,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<IRecipeRepository, RecipeRepository>();
 
         // Cloudinary
         services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));
@@ -54,6 +55,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ITagService, TagService>();
+        services.AddScoped<IRecipeService, RecipeService>();
 
         return services;
     }

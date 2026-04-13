@@ -13,6 +13,11 @@ public class TagRepository : GenericRepository<Tag>, ITagRepository
         return await _dbSet.ToListAsync();
     }
 
+    public async Task<List<Tag>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        return await _dbSet.Where(t => ids.Contains(t.Id)).ToListAsync();
+    }
+
     public async Task<bool> NameExistsAsync(string name)
     {
         return await _dbSet.AnyAsync(t => t.Name.ToLower() == name.ToLower());
