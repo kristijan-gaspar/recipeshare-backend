@@ -10,7 +10,12 @@ public class TagRepository : GenericRepository<Tag>, ITagRepository
 
     public async Task<List<Tag>> GetAllAsync()
     {
-        return await _dbSet.ToListAsync();
+        return await _dbSet.Include(t => t.Recipes).ToListAsync();
+    }
+
+    public async Task<Tag?> GetByIdWithRecipesAsync(int id)
+    {
+        return await _dbSet.Include(t => t.Recipes).FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<List<Tag>> GetByIdsAsync(IEnumerable<int> ids)

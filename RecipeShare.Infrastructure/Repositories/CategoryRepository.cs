@@ -16,9 +16,14 @@ internal class CategoryRepository : GenericRepository<Category>, ICategoryReposi
     {
     }
 
-    public async  Task<List<Category>> GetAllAsync()
+    public async Task<List<Category>> GetAllAsync()
     {
-        return await _dbSet.ToListAsync();
+        return await _dbSet.Include(c => c.Recipes).ToListAsync();
+    }
+
+    public async Task<Category?> GetByIdWithRecipesAsync(int id)
+    {
+        return await _dbSet.Include(c => c.Recipes).FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<bool> NameExistsAsync(string name)
