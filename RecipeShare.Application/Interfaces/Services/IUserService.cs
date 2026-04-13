@@ -1,3 +1,4 @@
+using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users;
 
 namespace RecipeShare.Application.Interfaces.Services;
@@ -10,4 +11,6 @@ public interface IUserService
     Task ChangeEmailAsync(int userId, ChangeEmailRequest request);
     Task UpdateProfileImageAsync(int userId, Stream image, string fileName);
     Task DeleteProfileImageAsync(int userId);
+    Task<PagedResponse<UserSearchResponse>> SearchUsersAsync(string query, int pageNumber, int pageSize);
+    Task<PagedResponse<AdminUserSearchResponse>> SearchUsersForAdminAsync(string query, int page, int pageSize);
 }
