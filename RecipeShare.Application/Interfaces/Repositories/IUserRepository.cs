@@ -8,4 +8,6 @@ public interface IUserRepository : IGenericRepository<User>
     Task<User?> GetByUsernameAsync(string username);
     Task<bool> EmailExistsAsync(string email);
     Task<bool> UsernameExistsAsync(string username);
+    Task<List<User>> SearchByUsername(string query, int pageNumber, int pageSize);
+    Task<int> CountByUsernameAsync(string query);
 }

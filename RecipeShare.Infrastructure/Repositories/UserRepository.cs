@@ -28,4 +28,24 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await _dbSet.AnyAsync(u => u.Username == username);
     }
+
+    public async Task<List<User>> SearchByUsername(string query, int pageNumber, int pageSize)
+    {
+        var normalizedQuery = query.Trim().ToLower();
+
+        return await _dbSet
+            .Where(u => u.Username.Contains(normalizedQuery))
+            .OrderBy(u => u.Username)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> CountByUsernameAsync(string query)
+    {
+        var normalizedQuery = query.Trim().ToLower();
+
+        return await _context.Users
+            .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery));
+    }
 }

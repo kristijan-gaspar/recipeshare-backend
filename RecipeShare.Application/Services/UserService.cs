@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using RecipeShare.Application.Common;
 using RecipeShare.Application.Constants;
 using RecipeShare.Application.DTOs.Users;
 using RecipeShare.Application.Enums;
@@ -176,5 +177,52 @@ public class UserService : IUserService
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, currentPassword);
         if (result == PasswordVerificationResult.Failed)
             throw new UnauthorizedException(CurrentPasswordIncorrectMessage);
+    }
+
+    public async Task<PagedResponse<UserSearchResponse>> SearchUsersAsync (string query, int pageNumber, int pageSize)
+    {
+        var users = await _userRepository.SearchByUsername(query, pageNumber, pageSize);
+        var totalCount = await _userRepository.CountByUsernameAsync(query);
+
+        var mappedUsers = users.Select(u => new UserSearchResponse
+        {
+            Id = u.Id,
+            Username = u.Username,
+            ProfileImageUrl = u.ProfileImageUrl
+        }).ToList();
+
+        return new PagedResponse<UserSearchResponse>
+        {
+            Items = mappedUsers,
+            TotalCount = await _userRepository.CountByUsernameAsync(query),
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            HasNextPage = pageNumber * pageSize < totalCount
+        };
+    }
+
+    public async Task<PagedResponse<AdminUserSearchResponse>> SearchUsersForAdminAsync(string query, int pageNumber, int pageSize)
+    {
+        var users = await _userRepository.SearchByUsername(query, pageNumber, pageSize);
+        var totalCount = await _userRepository.CountByUsernameAsync(query);
+
+        var mappedUsers = users.Select(u => new AdminUserSearchResponse
+        {
+            Id = u.Id,
+            Username = u.Username,
+            ProfileImageUrl = u.ProfileImageUrl,
+            CreatedAt = u.CreatedAt,
+            Email = u.Email,
+            IsBlocked = u.IsBlocked
+        }).ToList();
+
+        return new PagedResponse<AdminUserSearchResponse>
+        {
+            Items = mappedUsers,
+            TotalCount = await _userRepository.CountByUsernameAsync(query),
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            HasNextPage = pageNumber * pageSize < totalCount
+        };
     }
 }
