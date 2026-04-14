@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecipeShare.API.Extensions;
+using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users;
+using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Services;
 using RecipeShare.Application.Services;
 using System.Security.Claims;
@@ -102,4 +104,19 @@ public class UserController : ControllerBase
         var result = await _followService.ToggleFollowAsync(id, currentUserId);
         return Ok(result);
     } 
+
+
+    [HttpGet("search")]
+    public async Task<ActionResult<PagedResponse<UserSearchResponse>>> SearchUsers(
+    [FromQuery] string query,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("Name is required");
+
+        var result = await _userService.SearchUsersAsync(query, page, pageSize);
+        return Ok(result);
+    }
+
 }
