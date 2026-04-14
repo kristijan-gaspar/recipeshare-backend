@@ -30,25 +30,25 @@ public class TagService : ITagService
         return tags
             .Where(t => t.IsActive)
             .Select(t => new TagResponse
-        {
-            Id = t.Id,
-            Name = t.Name,
-            RecipeCount = 0
-        }).ToList();
+            {
+                Id = t.Id,
+                Name = t.Name,
+                RecipeCount = t.Recipes.Count
+            }).ToList();
     }
 
     public async Task<TagResponse> GetTagByIdAsync(int id)
     {
-        var tag = await _tagRepo.GetByIdAsync(id);
+        var tag = await _tagRepo.GetByIdWithRecipesAsync(id);
 
-        if(tag == null)
+        if (tag == null)
             throw new NotFoundException("Tag not found.");
 
         return new TagResponse
         {
             Id = tag.Id,
             Name = tag.Name,
-            RecipeCount = 0
+            RecipeCount = tag.Recipes.Count
         };
     }
 
@@ -58,19 +58,19 @@ public class TagService : ITagService
         var tags = await _tagRepo.GetAllAsync();
 
         return tags.Select(t => new AdminTagResponse
-            {
-                Id = t.Id,
-                Name = t.Name,
-                RecipeCount = 0,
-                CreatedaAt = t.CreatedAt,
-                UpdatedAt = t.UpdatedAt,
-                IsActive = t.IsActive
+        {
+            Id = t.Id,
+            Name = t.Name,
+            RecipeCount = t.Recipes.Count,
+            CreatedaAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt,
+            IsActive = t.IsActive
         }).ToList();
     }
 
     public async Task<AdminTagResponse> GetAdminTagByIdAsync(int id)
     {
-        var tag = await _tagRepo.GetByIdAsync(id);
+        var tag = await _tagRepo.GetByIdWithRecipesAsync(id);
 
         if (tag == null)
             throw new NotFoundException("Tag not found.");
@@ -79,7 +79,7 @@ public class TagService : ITagService
         {
             Id = tag.Id,
             Name = tag.Name,
-            RecipeCount = 0,
+            RecipeCount = tag.Recipes.Count,
             CreatedaAt = tag.CreatedAt,
             UpdatedAt = tag.UpdatedAt,
             IsActive = tag.IsActive

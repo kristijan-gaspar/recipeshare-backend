@@ -14,4 +14,6 @@ public class User
     public UserRole Role { get; set; } = UserRole.User;
     public bool IsBlocked { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
 }

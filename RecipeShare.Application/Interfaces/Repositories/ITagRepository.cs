@@ -10,5 +10,7 @@ namespace RecipeShare.Application.Interfaces.Repositories;
 public interface ITagRepository : IGenericRepository<Tag>
 {
     Task<List<Tag>> GetAllAsync();
+    Task<Tag?> GetByIdWithRecipesAsync(int id);
+    Task<List<Tag>> GetByIdsAsync(IEnumerable<int> ids);
     Task<bool> NameExistsAsync(string name);
 }

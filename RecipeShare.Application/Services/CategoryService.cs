@@ -30,25 +30,25 @@ public class CategoryService : ICategoryService
         return categories
             .Where(c => c.IsActive)
             .Select(c => new CategoryResponse
-        {
-            Id = c.Id,
-            Name = c.Name,
-            RecipeCount = 0
-        }).ToList();
+            {
+                Id = c.Id,
+                Name = c.Name,
+                RecipeCount = c.Recipes.Count
+            }).ToList();
     }
 
     public async Task<CategoryResponse> GetCategoryByIdAsync(int id)
     {
-        var category = await _categoryRepo.GetByIdAsync(id);
+        var category = await _categoryRepo.GetByIdWithRecipesAsync(id);
 
-        if(category == null)
+        if (category == null)
             throw new NotFoundException("Category not found.");
 
         return new CategoryResponse
         {
             Id = category.Id,
             Name = category.Name,
-            RecipeCount = 0
+            RecipeCount = category.Recipes.Count
         };
     }
 
@@ -62,17 +62,16 @@ public class CategoryService : ICategoryService
         {
             Id = c.Id,
             Name = c.Name,
-            RecipeCount = 0,
+            RecipeCount = c.Recipes.Count,
             CreatedaAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
             IsActive = c.IsActive,
         }).ToList();
-
     }
 
     public async Task<AdminCategoryResponse> GetAdminCategoryByIdAsync(int id)
     {
-        var category = await _categoryRepo.GetByIdAsync(id);
+        var category = await _categoryRepo.GetByIdWithRecipesAsync(id);
 
         if (category == null)
             throw new NotFoundException("Category not found.");
@@ -81,7 +80,7 @@ public class CategoryService : ICategoryService
         {
             Id = category.Id,
             Name = category.Name,
-            RecipeCount = 0,
+            RecipeCount = category.Recipes.Count,
             CreatedaAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt,
             IsActive = category.IsActive,
