@@ -22,6 +22,7 @@ public class UserService : IUserService
     private readonly IImageStorageService _imageStorageService;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly ILogger<UserService> _logger;
+    private readonly IFollowRepository _followRepo;
 
     public UserService(
         IUserRepository userRepository,
@@ -29,7 +30,8 @@ public class UserService : IUserService
         IUnitOfWork unitOfWork,
         IImageStorageService imageStorageService,
         IPasswordHasher<User> passwordHasher,
-        ILogger<UserService> logger)
+        ILogger<UserService> logger,
+        IFollowRepository followRepo)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -37,11 +39,22 @@ public class UserService : IUserService
         _imageStorageService = imageStorageService;
         _passwordHasher = passwordHasher;
         _logger = logger;
+        _followRepo = followRepo;
     }
 
     public async Task<UserProfileResponse> GetProfileAsync(int userId, int? currentUserId)
     {
         var user = await GetUserOrThrowAsync(userId);
+
+        var followersCount = await _followRepo.GetFollowerCountAsync(userId);
+        var followingCount = await _followRepo.GetFollowingCountAsync(userId);
+
+        bool isFollowedByCurrentUser = false;
+
+        if (currentUserId.HasValue)
+        {
+            isFollowedByCurrentUser = await _followRepo.ExistsAsync(currentUserId.Value, userId);
+        }
 
         return new UserProfileResponse
         {
@@ -50,9 +63,9 @@ public class UserService : IUserService
             ProfileImageUrl = user.ProfileImageUrl,
             Bio = user.Bio,
             RecipeCount = 0,
-            FollowerCount = 0,
-            FollowingCount = 0,
-            IsFollowedByCurrentUser = false
+            FollowerCount = followersCount,
+            FollowingCount = followingCount,
+            IsFollowedByCurrentUser = isFollowedByCurrentUser
         };
     }
 

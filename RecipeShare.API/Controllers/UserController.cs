@@ -5,6 +5,8 @@ using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users;
 using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Services;
+using RecipeShare.Application.Services;
+using System.Security.Claims;
 
 namespace RecipeShare.API.Controllers;
 
@@ -14,10 +16,12 @@ namespace RecipeShare.API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IFollowService _followService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, IFollowService followService)
     {
         _userService = userService;
+        _followService = followService;
     }
 
     [HttpGet]
@@ -86,6 +90,20 @@ public class UserController : ControllerBase
         await _userService.DeleteProfileImageAsync(currentUserId);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/follow")]
+    public async Task<ActionResult<bool>> ToggleFollow(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(userIdClaim))
+            return Unauthorized();
+
+        if (!int.TryParse(userIdClaim, out var currentUserId))
+            return Unauthorized();
+
+        var result = await _followService.ToggleFollowAsync(id, currentUserId);
+        return Ok(result);
+    } 
 
 
     [HttpGet("search")]
