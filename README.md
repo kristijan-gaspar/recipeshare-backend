@@ -147,6 +147,8 @@ Swagger UI is available at http://localhost:5285/swagger.
 
 ## API Endpoints
 
+Protected endpoints require the `Authorization: Bearer {token}` header.
+
 ### Authentication
 
 | Method | Route | Description | Auth Required |
@@ -168,4 +170,74 @@ Swagger UI is available at http://localhost:5285/swagger.
 | PUT | `/api/user/image` | Upload/replace profile image (multipart/form-data) | Yes |
 | DELETE | `/api/user/image` | Delete my profile image | Yes |
 
-Protected endpoints require the `Authorization: Bearer {token}` header.
+### Recipes
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/recipes` | Get paginated recipe feed (cursor-based, supports filters) | Yes |
+| GET | `/api/recipes/{id}` | Get recipe detail | Yes |
+| POST | `/api/recipes` | Create a new recipe | Yes |
+| PUT | `/api/recipes/{id}` | Update a recipe | Yes |
+| DELETE | `/api/recipes/{id}` | Delete a recipe (admin can delete any) | Yes |
+| PUT | `/api/recipes/{id}/image` | Upload/replace recipe image (multipart/form-data) | Yes |
+| DELETE | `/api/recipes/{id}/image` | Delete recipe image | Yes |
+
+**Query parameters for `GET /api/recipes`:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `search` | string | Filter by title |
+| `categoryId` | int | Filter by category |
+| `tagIds` | int[] | Filter by tags |
+| `difficulty` | string | Filter by difficulty (`Easy`, `Medium`, `Hard`) |
+| `cursor` | int | ID of the last seen recipe (for pagination) |
+| `pageSize` | int | Number of results per page (default: 10) |
+
+### Categories
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/categories` | Get all active categories | No |
+| GET | `/api/categories/{id}` | Get category by ID | No |
+
+### Tags
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/tags` | Get all active tags | No |
+| GET | `/api/tags/{id}` | Get tag by ID | No |
+
+### Lookups
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/lookups/measurement-units` | Get all available measurement units | No |
+| GET | `/api/lookups/difficulty-levels` | Get all available difficulty levels | No |
+
+### Admin — Categories
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/admin/categories` | Get all categories (including inactive) | Admin |
+| GET | `/api/admin/categories/{id}` | Get category by ID | Admin |
+| POST | `/api/admin/categories` | Create a new category | Admin |
+| PUT | `/api/admin/categories/{id}` | Update a category | Admin |
+| DELETE | `/api/admin/categories/{id}` | Delete a category | Admin |
+| PATCH | `/api/admin/categories/{id}/toggle-IsActive` | Toggle category active status | Admin |
+
+### Admin — Tags
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/admin/tags` | Get all tags (including inactive) | Admin |
+| GET | `/api/admin/tags/{id}` | Get tag by ID | Admin |
+| POST | `/api/admin/tags` | Create a new tag | Admin |
+| PUT | `/api/admin/tags/{id}` | Update a tag | Admin |
+| DELETE | `/api/admin/tags/{id}` | Delete a tag | Admin |
+| PATCH | `/api/admin/tags/{id}/toggle-IsActive` | Toggle tag active status | Admin |
+
+### Admin — Users
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/api/admin/users/search` | Search users by name (paginated) | Admin |
