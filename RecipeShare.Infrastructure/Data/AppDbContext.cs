@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<Step> Steps => Set<Step>();
     public DbSet<Follow> Follows => Set<Follow>();
+    public DbSet<Collection> Collections => Set<Collection>();
+    public DbSet<CollectionRecipe> CollectionRecipes => Set<CollectionRecipe>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
