@@ -62,6 +62,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ITagService, TagService>();
+        services.AddScoped<IRecipeSocialStatsService, RecipeSocialStatsService>();
         services.AddScoped<IRecipeService, RecipeService>();
 
         services.AddScoped<IFollowService, FollowService>();

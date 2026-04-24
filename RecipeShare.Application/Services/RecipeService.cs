@@ -16,9 +16,7 @@ public class RecipeService : IRecipeService
     private readonly IRecipeRepository _recipeRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITagRepository _tagRepository;
-    private readonly ILikeRepository _likeRepository;
-    private readonly IRatingRepository _ratingRepository;
-    private readonly ICommentRepository _commentRepository;
+    private readonly IRecipeSocialStatsService _socialStats;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IImageStorageService _imageStorageService;
     private readonly ILogger<RecipeService> _logger;
@@ -27,9 +25,7 @@ public class RecipeService : IRecipeService
         IRecipeRepository recipeRepository,
         ICategoryRepository categoryRepository,
         ITagRepository tagRepository,
-        ILikeRepository likeRepository,
-        IRatingRepository ratingRepository,
-        ICommentRepository commentRepository,
+        IRecipeSocialStatsService socialStats,
         IUnitOfWork unitOfWork,
         IImageStorageService imageStorageService,
         ILogger<RecipeService> logger)
@@ -37,9 +33,7 @@ public class RecipeService : IRecipeService
         _recipeRepository = recipeRepository;
         _categoryRepository = categoryRepository;
         _tagRepository = tagRepository;
-        _likeRepository = likeRepository;
-        _ratingRepository = ratingRepository;
-        _commentRepository = commentRepository;
+        _socialStats = socialStats;
         _unitOfWork = unitOfWork;
         _imageStorageService = imageStorageService;
         _logger = logger;
@@ -50,25 +44,8 @@ public class RecipeService : IRecipeService
         var (items, hasMore) = await _recipeRepository.GetCursorPagedAsync(parameters);
 
         var recipes = items.ToList();
-        var recipeIds = recipes.Select(r => r.Id).ToList();
-
-        var likeCounts = await _likeRepository.GetCountsByRecipeIdsAsync(recipeIds);
-        var likedByMe = await _likeRepository.GetLikedRecipeIdsAsync(userId, recipeIds);
-        var ratingStats = await _ratingRepository.GetStatsByRecipeIdsAsync(recipeIds);
-        var myRatings = await _ratingRepository.GetMyRatingsByRecipeIdsAsync(userId, recipeIds);
-        var commentCounts = await _commentRepository.GetCountsByRecipeIdsAsync(recipeIds);
-
-        var mapped = recipes.Select(r =>
-        {
-            var response = r.Adapt<RecipeSummaryResponse>();
-            response.LikeCount = likeCounts.GetValueOrDefault(r.Id);
-            response.IsLikedByMe = likedByMe.Contains(r.Id);
-            response.AverageRating = ratingStats.TryGetValue(r.Id, out var s) ? s.Avg : 0;
-            response.RatingCount = ratingStats.TryGetValue(r.Id, out var s2) ? s2.Count : 0;
-            response.MyRating = myRatings.TryGetValue(r.Id, out var mr) ? mr : null;
-            response.CommentCount = commentCounts.GetValueOrDefault(r.Id);
-            return response;
-        }).ToList();
+        var mapped = recipes.Select(r => r.Adapt<RecipeSummaryResponse>()).ToList();
+        await _socialStats.ApplyStatsAsync(mapped, userId);
 
         return new CursorPagedResponse<RecipeSummaryResponse>
         {
@@ -85,16 +62,7 @@ public class RecipeService : IRecipeService
             throw new NotFoundException("Recipe not found.");
 
         var response = recipe.Adapt<RecipeDetailResponse>();
-
-        response.LikeCount = await _likeRepository.GetCountByRecipeAsync(id);
-        response.IsLikedByMe = await _likeRepository.GetByUserAndRecipeAsync(userId, id) != null;
-        var (avg, ratingCount) = await _ratingRepository.GetStatsByRecipeAsync(id);
-        response.AverageRating = avg;
-        response.RatingCount = ratingCount;
-        var myRating = await _ratingRepository.GetByUserAndRecipeAsync(userId, id);
-        response.MyRating = myRating?.Value;
-        response.CommentCount = await _commentRepository.GetCountByRecipeAsync(id);
-
+        await _socialStats.ApplyStatsAsync(response, userId);
         return response;
     }
 
