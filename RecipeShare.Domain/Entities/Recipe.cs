@@ -28,4 +28,5 @@ public class Recipe
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
     public ICollection<CollectionRecipe> CollectionRecipes { get; set; } = new List<CollectionRecipe>();
     public ICollection<Like> Likes { get; set; } = new List<Like>();
+    public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 }

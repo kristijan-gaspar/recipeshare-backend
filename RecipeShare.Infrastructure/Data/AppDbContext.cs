@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionRecipe> CollectionRecipes => Set<CollectionRecipe>();
     public DbSet<Like> Likes => Set<Like>();
+    public DbSet<Rating> Ratings => Set<Rating>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
