@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<ILikeRepository, LikeRepository>();
         services.AddScoped<IRatingRepository, RatingRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
 
         // Cloudinary
         services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IFollowService, FollowService>();
         services.AddScoped<ILikeService, LikeService>();
         services.AddScoped<IRatingService, RatingService>();
+        services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ICollectionService, CollectionService>();
 
         return services;
