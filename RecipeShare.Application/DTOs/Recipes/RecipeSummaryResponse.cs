@@ -15,4 +15,10 @@ public class RecipeSummaryResponse
     public int CookTimeMinutes { get; set; }
     public bool IsFeatured { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int LikeCount { get; set; }
+    public bool IsLikedByMe { get; set; }
+    public double AverageRating { get; set; }
+    public int RatingCount { get; set; }
+    public int? MyRating { get; set; }
+    public int CommentCount { get; set; }
 }

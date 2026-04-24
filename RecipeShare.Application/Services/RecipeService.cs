@@ -16,6 +16,7 @@ public class RecipeService : IRecipeService
     private readonly IRecipeRepository _recipeRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITagRepository _tagRepository;
+    private readonly IRecipeSocialStatsService _socialStats;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IImageStorageService _imageStorageService;
     private readonly ILogger<RecipeService> _logger;
@@ -24,6 +25,7 @@ public class RecipeService : IRecipeService
         IRecipeRepository recipeRepository,
         ICategoryRepository categoryRepository,
         ITagRepository tagRepository,
+        IRecipeSocialStatsService socialStats,
         IUnitOfWork unitOfWork,
         IImageStorageService imageStorageService,
         ILogger<RecipeService> logger)
@@ -31,17 +33,19 @@ public class RecipeService : IRecipeService
         _recipeRepository = recipeRepository;
         _categoryRepository = categoryRepository;
         _tagRepository = tagRepository;
+        _socialStats = socialStats;
         _unitOfWork = unitOfWork;
         _imageStorageService = imageStorageService;
         _logger = logger;
     }
 
-    public async Task<CursorPagedResponse<RecipeSummaryResponse>> GetRecipesAsync(RecipeQueryParameters parameters)
+    public async Task<CursorPagedResponse<RecipeSummaryResponse>> GetRecipesAsync(RecipeQueryParameters parameters, int userId)
     {
         var (items, hasMore) = await _recipeRepository.GetCursorPagedAsync(parameters);
 
         var recipes = items.ToList();
         var mapped = recipes.Select(r => r.Adapt<RecipeSummaryResponse>()).ToList();
+        await _socialStats.ApplyStatsAsync(mapped, userId);
 
         return new CursorPagedResponse<RecipeSummaryResponse>
         {
@@ -51,13 +55,15 @@ public class RecipeService : IRecipeService
         };
     }
 
-    public async Task<RecipeDetailResponse> GetRecipeByIdAsync(int id)
+    public async Task<RecipeDetailResponse> GetRecipeByIdAsync(int id, int userId)
     {
         var recipe = await _recipeRepository.GetDetailedByIdAsync(id);
         if (recipe == null)
             throw new NotFoundException("Recipe not found.");
 
-        return recipe.Adapt<RecipeDetailResponse>();
+        var response = recipe.Adapt<RecipeDetailResponse>();
+        await _socialStats.ApplyStatsAsync(response, userId);
+        return response;
     }
 
     public async Task<int> CreateAsync(CreateRecipeRequest request, int userId)

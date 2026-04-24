@@ -19,4 +19,7 @@ public class User
     public ICollection<Follow> Followers { get; set; } = new List<Follow>();
     public ICollection<Follow> Following { get; set; } = new List<Follow>();
     public ICollection<Collection> Collections { get; set; } = new List<Collection>();
+    public ICollection<Like> Likes { get; set; } = new List<Like>();
+    public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

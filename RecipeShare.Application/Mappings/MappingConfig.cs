@@ -1,4 +1,5 @@
 using Mapster;
+using RecipeShare.Application.DTOs.Comments;
 using RecipeShare.Application.DTOs.Recipes;
 using RecipeShare.Domain.Entities;
 
@@ -29,5 +30,13 @@ public static class MappingConfig
             .Map(dest => dest.Tags, src => src.Tags.Select(t => t.Name).ToList())
             .Map(dest => dest.Ingredients, src => src.Ingredients)
             .Map(dest => dest.Steps, src => src.Steps);
+
+        TypeAdapterConfig<Comment, CommentResponse>.NewConfig()
+            .Map(dest => dest.Author, src => new CommentAuthorResponse
+            {
+                Id = src.UserId,
+                Username = src.User.Username,
+                ProfileImageUrl = src.User.ProfileImageUrl
+            });
     }
 }
