@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<ICollectionRepository, CollectionRepository>();
+
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
@@ -60,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IRecipeService, RecipeService>();
 
         services.AddScoped<IFollowService, FollowService>();
+        services.AddScoped<ICollectionService, CollectionService>();
 
         return services;
     }

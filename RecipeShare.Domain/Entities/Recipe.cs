@@ -26,4 +26,5 @@ public class Recipe
     public ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
     public ICollection<Step> Steps { get; set; } = new List<Step>();
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+    public ICollection<CollectionRecipe> CollectionRecipes { get; set; } = new List<CollectionRecipe>();
 }
