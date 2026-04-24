@@ -45,4 +45,13 @@ internal class CommentRepository : GenericRepository<Comment>, ICommentRepositor
     {
         return await _dbSet.CountAsync(c => c.RecipeId == recipeId);
     }
+
+    public async Task<Dictionary<int, int>> GetCountsByRecipeIdsAsync(IEnumerable<int> recipeIds)
+    {
+        return await _dbSet
+            .Where(c => recipeIds.Contains(c.RecipeId))
+            .GroupBy(c => c.RecipeId)
+            .Select(g => new { RecipeId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.RecipeId, x => x.Count);
+    }
 }

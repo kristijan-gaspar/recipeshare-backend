@@ -21,4 +21,10 @@ public class RecipeDetailResponse
     public List<StepResponse> Steps { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public int LikeCount { get; set; }
+    public bool IsLikedByMe { get; set; }
+    public double AverageRating { get; set; }
+    public int RatingCount { get; set; }
+    public int? MyRating { get; set; }
+    public int CommentCount { get; set; }
 }

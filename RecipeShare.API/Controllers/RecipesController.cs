@@ -24,14 +24,16 @@ public class RecipesController : ControllerBase
     public async Task<ActionResult<CursorPagedResponse<RecipeSummaryResponse>>> GetAll(
         [FromQuery] RecipeQueryParameters parameters)
     {
-        var result = await _recipeService.GetRecipesAsync(parameters);
+        var userId = User.GetUserId();
+        var result = await _recipeService.GetRecipesAsync(parameters, userId);
         return Ok(result);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<RecipeDetailResponse>> GetById(int id)
     {
-        var recipe = await _recipeService.GetRecipeByIdAsync(id);
+        var userId = User.GetUserId();
+        var recipe = await _recipeService.GetRecipeByIdAsync(id, userId);
         return Ok(recipe);
     }
 

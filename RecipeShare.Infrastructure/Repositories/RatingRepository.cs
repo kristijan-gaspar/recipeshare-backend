@@ -21,4 +21,20 @@ internal class RatingRepository : GenericRepository<Rating>, IRatingRepository
         var avg = count > 0 ? ratings.Average(r => r.Value) : 0;
         return (avg, count);
     }
+
+    public async Task<Dictionary<int, (double Avg, int Count)>> GetStatsByRecipeIdsAsync(IEnumerable<int> recipeIds)
+    {
+        return await _dbSet
+            .Where(r => recipeIds.Contains(r.RecipeId))
+            .GroupBy(r => r.RecipeId)
+            .Select(g => new { RecipeId = g.Key, Avg = g.Average(x => (double)x.Value), Count = g.Count() })
+            .ToDictionaryAsync(x => x.RecipeId, x => (x.Avg, x.Count));
+    }
+
+    public async Task<Dictionary<int, int>> GetMyRatingsByRecipeIdsAsync(int userId, IEnumerable<int> recipeIds)
+    {
+        return await _dbSet
+            .Where(r => r.UserId == userId && recipeIds.Contains(r.RecipeId))
+            .ToDictionaryAsync(r => r.RecipeId, r => r.Value);
+    }
 }

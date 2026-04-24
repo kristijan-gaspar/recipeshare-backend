@@ -18,4 +18,23 @@ internal class LikeRepository : GenericRepository<Like>, ILikeRepository
     {
         return await _dbSet.CountAsync(l => l.RecipeId == recipeId);
     }
+
+    public async Task<Dictionary<int, int>> GetCountsByRecipeIdsAsync(IEnumerable<int> recipeIds)
+    {
+        return await _dbSet
+            .Where(l => recipeIds.Contains(l.RecipeId))
+            .GroupBy(l => l.RecipeId)
+            .Select(g => new { RecipeId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.RecipeId, x => x.Count);
+    }
+
+    public async Task<HashSet<int>> GetLikedRecipeIdsAsync(int userId, IEnumerable<int> recipeIds)
+    {
+        var liked = await _dbSet
+            .Where(l => l.UserId == userId && recipeIds.Contains(l.RecipeId))
+            .Select(l => l.RecipeId)
+            .ToListAsync();
+
+        return liked.ToHashSet();
+    }
 }

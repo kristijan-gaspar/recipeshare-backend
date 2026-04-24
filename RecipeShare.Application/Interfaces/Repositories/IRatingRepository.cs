@@ -6,4 +6,6 @@ public interface IRatingRepository : IGenericRepository<Rating>
 {
     Task<Rating?> GetByUserAndRecipeAsync(int userId, int recipeId);
     Task<(double Avg, int Count)> GetStatsByRecipeAsync(int recipeId);
+    Task<Dictionary<int, (double Avg, int Count)>> GetStatsByRecipeIdsAsync(IEnumerable<int> recipeIds);
+    Task<Dictionary<int, int>> GetMyRatingsByRecipeIdsAsync(int userId, IEnumerable<int> recipeIds);
 }
