@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Follow> Follows => Set<Follow>();
     public DbSet<Collection> Collections => Set<Collection>();
     public DbSet<CollectionRecipe> CollectionRecipes => Set<CollectionRecipe>();
+    public DbSet<Like> Likes => Set<Like>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
