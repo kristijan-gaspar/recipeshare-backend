@@ -9,6 +9,7 @@ using RecipeShare.Domain.Enums;
 namespace RecipeShare.API.Controllers;
 
 [ApiController]
+[Route("api")]
 [Authorize]
 public class CommentsController : ControllerBase
 {
@@ -19,7 +20,7 @@ public class CommentsController : ControllerBase
         _commentService = commentService;
     }
 
-    [HttpGet("api/recipes/{recipeId:int}/comments")]
+    [HttpGet("recipes/{recipeId:int}/comments")]
     public async Task<ActionResult<CursorPagedResponse<CommentResponse>>> GetPaged(
         int recipeId, [FromQuery] CommentQueryParameters parameters)
     {
@@ -27,7 +28,7 @@ public class CommentsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("api/recipes/{recipeId:int}/comments")]
+    [HttpPost("recipes/{recipeId:int}/comments")]
     public async Task<ActionResult<CommentResponse>> Create(
         int recipeId, [FromBody] CommentRequest request)
     {
@@ -36,7 +37,7 @@ public class CommentsController : ControllerBase
         return CreatedAtAction(nameof(GetPaged), new { recipeId }, result);
     }
 
-    [HttpPut("api/comments/{id:int}")]
+    [HttpPut("comments/{id:int}")]
     public async Task<ActionResult<CommentResponse>> Update(
         int id, [FromBody] CommentRequest request)
     {
@@ -45,7 +46,7 @@ public class CommentsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("api/comments/{id:int}")]
+    [HttpDelete("comments/{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         var userId = User.GetUserId();
