@@ -70,6 +70,8 @@ public static class DependencyInjection
         services.AddScoped<IRatingService, RatingService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ICollectionService, CollectionService>();
+        services.AddScoped<IFeedService, FeedService>();
+        services.AddScoped<IRecipeResponseMapper, RecipeResponseMapper>();
 
         return services;
     }
