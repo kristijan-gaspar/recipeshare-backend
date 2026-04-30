@@ -37,4 +37,12 @@ internal class FollowRepository : GenericRepository<Follow>, IFollowRepository
         return await _dbSet
             .AnyAsync(f => f.FollowerId == followerId && f.FollowedId == followedId);
     }
+
+    public async Task<List<int>> GetFollowingUserIdsAsync(int userId)
+    {
+        return await _context.Follows
+            .Where(f => f.FollowerId == userId)
+            .Select(f => f.FollowedId)
+            .ToListAsync();
+    }
 }

@@ -72,4 +72,158 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
     {
         _context.Set<Step>().RemoveRange(steps);
     }
+
+
+    private IQueryable<Recipe> WithSummaryIncludes()
+    {
+        return _dbSet
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .Include(r => r.Tags);
+    }
+
+    private static IQueryable<Recipe> ApplyFilters(IQueryable<Recipe> query, RecipeQueryParameters parameters)
+    {
+        if (!string.IsNullOrWhiteSpace(parameters.Search))
+        {
+            var search = parameters.Search.Trim().ToLower();
+
+            query = query.Where(r =>
+                r.Title.ToLower().Contains(search) ||
+                (r.Description != null && r.Description.ToLower().Contains(search)));
+        }
+
+        if (parameters.CategoryId.HasValue)
+        {
+            query = query.Where(r => r.CategoryId == parameters.CategoryId.Value);
+        }
+
+        if (parameters.TagIds != null && parameters.TagIds.Count > 0)
+        {
+            query = query.Where(r =>
+                r.Tags.Any(t => parameters.TagIds.Contains(t.Id)));
+        }
+
+        if (parameters.Difficulty.HasValue)
+        {
+            query = query.Where(r => r.Difficulty == parameters.Difficulty.Value);
+        }
+
+        return query;
+    }
+
+
+    public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetFeedAsync(
+        IEnumerable<int> followingUserIds,
+        RecipeQueryParameters parameters)
+    {
+        var ids = followingUserIds.ToList();
+
+        var query = WithSummaryIncludes()
+            .Where(r => ids.Contains(r.UserId));
+
+        query = ApplyFilters(query, parameters);
+
+        if (parameters.Cursor.HasValue)
+        {
+            var anchor = await _dbSet.FindAsync(parameters.Cursor.Value);
+            if (anchor != null)
+                query = query.Where(r =>
+                    r.CreatedAt < anchor.CreatedAt ||
+                    (r.CreatedAt == anchor.CreatedAt && r.Id < anchor.Id));
+        }
+
+        query = query
+            .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id);
+
+        var items = await query.Take(parameters.PageSize + 1).ToListAsync();
+        var hasMore = items.Count > parameters.PageSize;
+
+        return (items.Take(parameters.PageSize), hasMore);
+    }
+
+    public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetFeaturedAsync(
+        RecipeQueryParameters parameters)
+    {
+        var query = WithSummaryIncludes()
+            .Where(r => r.IsFeatured);
+
+        query = ApplyFilters(query, parameters);
+
+        if (parameters.Cursor.HasValue)
+        {
+            var anchor = await _dbSet.FindAsync(parameters.Cursor.Value);
+            if (anchor != null)
+                query = query.Where(r =>
+                    r.CreatedAt < anchor.CreatedAt ||
+                    (r.CreatedAt == anchor.CreatedAt && r.Id < anchor.Id));
+        }
+
+        query = query
+            .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id);
+
+        var items = await query.Take(parameters.PageSize + 1).ToListAsync();
+        var hasMore = items.Count > parameters.PageSize;
+
+        return (items.Take(parameters.PageSize), hasMore);
+    }
+
+    public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetExploreAsync(RecipeQueryParameters parameters)
+    {
+        var query = WithSummaryIncludes();
+
+        query = ApplyFilters(query, parameters);
+
+        var baseQuery = query.Select(r => new
+        {
+            Recipe = r,
+            LikeCount = r.Likes.Count,
+            RatingCount = r.Ratings.Count,
+            AverageRating = r.Ratings.Any() ? r.Ratings.Average(x => (double)x.Value) : 0
+        });
+
+        if (parameters.Cursor.HasValue)
+        {
+            var anchor = await _dbSet
+                .Where(r => r.Id == parameters.Cursor.Value)
+                .Select(r => new
+                {
+                    r.Id,
+                    LikeCount = r.Likes.Count,
+                    RatingCount = r.Ratings.Count,
+                    AverageRating = r.Ratings.Any() ? r.Ratings.Average(x => (double)x.Value) : 0
+                })
+                .FirstOrDefaultAsync();
+
+            if (anchor != null)
+            {
+                baseQuery = baseQuery.Where(x =>
+                    x.LikeCount < anchor.LikeCount ||
+                    (x.LikeCount == anchor.LikeCount &&
+                     x.AverageRating < anchor.AverageRating) ||
+                    (x.LikeCount == anchor.LikeCount &&
+                     x.AverageRating == anchor.AverageRating &&
+                     x.RatingCount < anchor.RatingCount) ||
+                    (x.LikeCount == anchor.LikeCount &&
+                     x.AverageRating == anchor.AverageRating &&
+                     x.RatingCount == anchor.RatingCount &&
+                     x.Recipe.Id < anchor.Id));
+            }
+        }
+
+        var items = await baseQuery
+            .OrderByDescending(x => x.LikeCount)
+            .ThenByDescending(x => x.AverageRating)
+            .ThenByDescending(x => x.RatingCount)
+            .ThenByDescending(x => x.Recipe.Id)
+            .Take(parameters.PageSize + 1)
+            .Select(x => x.Recipe)
+            .ToListAsync();
+
+        var hasMore = items.Count > parameters.PageSize;
+
+        return (items.Take(parameters.PageSize), hasMore);
+    }
 }
