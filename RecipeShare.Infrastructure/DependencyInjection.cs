@@ -1,4 +1,6 @@
 using CloudinaryDotNet;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +12,7 @@ using RecipeShare.Application.Services;
 using RecipeShare.Domain.Entities;
 using RecipeShare.Infrastructure.Auth;
 using RecipeShare.Infrastructure.Data;
+using RecipeShare.Infrastructure.Firebase;
 using RecipeShare.Infrastructure.Repositories;
 using RecipeShare.Infrastructure.Storage;
 
@@ -43,6 +46,17 @@ public static class DependencyInjection
         services.AddScoped<IRatingRepository, RatingRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
 
+        services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+
+        // Firebase
+        services.Configure<FirebaseSettings>(config.GetSection("Firebase"));
+        services.AddSingleton(_ =>
+        {
+            var settings = config.GetSection("Firebase").Get<FirebaseSettings>()!;
+            var credential = GoogleCredential.FromFile(settings.CredentialsFilePath);
+            return FirebaseApp.Create(new AppOptions { Credential = credential });
+        });
+
         // Cloudinary
         services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));
         services.AddSingleton(sp =>
@@ -70,8 +84,13 @@ public static class DependencyInjection
         services.AddScoped<IRatingService, RatingService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ICollectionService, CollectionService>();
+
         services.AddScoped<IFeedService, FeedService>();
         services.AddScoped<IRecipeResponseMapper, RecipeResponseMapper>();
+        services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+        services.AddScoped<IDeviceTokenService, DeviceTokenService>();
+        services.AddScoped<IPushNotificationSender, FirebasePushNotificationSender>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }
