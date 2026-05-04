@@ -4,5 +4,5 @@ namespace RecipeShare.Application.Interfaces.Services;
 
 public interface ILikeService
 {
-    Task<ToggleLikeResponse> ToggleAsync(int recipeId, int userId);
+    Task<ToggleLikeResponse> ToggleAsync(int recipeId, int userId, string actorUsername);
 }

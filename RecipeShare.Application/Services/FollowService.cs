@@ -1,13 +1,7 @@
-﻿using RecipeShare.Application.Interfaces.Repositories;
-using RecipeShare.Application.Interfaces.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RecipeShare.Application.Exceptions;
-
+using RecipeShare.Application.Interfaces.Repositories;
+using RecipeShare.Application.Interfaces.Services;
 using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Application.Services;
@@ -17,17 +11,19 @@ public class FollowService : IFollowService
     private readonly IFollowRepository _followRepo;
     private readonly IUserRepository _userRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<FollowService> _logger;
 
-
-
-    public FollowService(IFollowRepository followRepo, IUserRepository userRepo, IUnitOfWork unitOfWork)
+    public FollowService(IFollowRepository followRepo, IUserRepository userRepo, IUnitOfWork unitOfWork, INotificationService notificationService, ILogger<FollowService> logger)
     {
         _followRepo = followRepo;
         _userRepo = userRepo;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
-    public async Task<bool> ToggleFollowAsync(int targetUserId, int currentUserId)
+    public async Task<bool> ToggleFollowAsync(int targetUserId, int currentUserId, string followerUsername)
     {
         if (targetUserId == currentUserId)
             throw new BadRequestException("You can't follow yourself");
@@ -38,22 +34,23 @@ public class FollowService : IFollowService
 
         var existingFollow = await _followRepo.GetByUsersAsync(currentUserId, targetUserId);
 
-        if(existingFollow != null)
+        if (existingFollow != null)
         {
             _followRepo.Delete(existingFollow);
             await _unitOfWork.SaveChangesAsync();
             return false;
         }
 
-        var follow = new Follow
+        await _followRepo.AddAsync(new Follow
         {
             FollowerId = currentUserId,
             FollowedId = targetUserId,
-            CreatedAt = DateTime.UtcNow,
-        };
-
-        await _followRepo.AddAsync(follow);
+            CreatedAt = DateTime.UtcNow
+        });
         await _unitOfWork.SaveChangesAsync();
+
+        try { await _notificationService.SendFollowNotificationAsync(targetUserId, followerUsername, currentUserId); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to send follow notification for user {TargetUserId}.", targetUserId); }
 
         return true;
     }
