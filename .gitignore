@@ -54,3 +54,4 @@ TestResult.xml
 nunit-*.xml
 appsettings.Development.json
 .vs/
+/RecipeShare.API/firebase-service-account.json
