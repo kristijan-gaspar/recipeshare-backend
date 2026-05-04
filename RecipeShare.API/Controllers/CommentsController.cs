@@ -33,7 +33,8 @@ public class CommentsController : ControllerBase
         int recipeId, [FromBody] CommentRequest request)
     {
         var userId = User.GetUserId();
-        var result = await _commentService.CreateAsync(recipeId, userId, request);
+        var username = User.GetUsername();
+        var result = await _commentService.CreateAsync(recipeId, userId, request, username);
         return CreatedAtAction(nameof(GetPaged), new { recipeId }, result);
     }
 

@@ -22,7 +22,8 @@ public class LikesController : ControllerBase
     public async Task<ActionResult<ToggleLikeResponse>> Toggle(int recipeId)
     {
         var userId = User.GetUserId();
-        var result = await _likeService.ToggleAsync(recipeId, userId);
+        var username = User.GetUsername();
+        var result = await _likeService.ToggleAsync(recipeId, userId, username);
         return Ok(result);
     }
 }
