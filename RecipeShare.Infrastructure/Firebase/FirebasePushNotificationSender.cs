@@ -1,3 +1,4 @@
+using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Microsoft.Extensions.Logging;
 using RecipeShare.Application.Interfaces.Repositories;
@@ -10,14 +11,17 @@ public class FirebasePushNotificationSender : IPushNotificationSender
     private readonly IDeviceTokenRepository _deviceTokenRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<FirebasePushNotificationSender> _logger;
+    private readonly FirebaseApp _firebaseApp;
 
     public FirebasePushNotificationSender(
         IDeviceTokenRepository deviceTokenRepo,
         IUnitOfWork unitOfWork,
+        FirebaseApp firebaseApp,
         ILogger<FirebasePushNotificationSender> logger)
     {
         _deviceTokenRepo = deviceTokenRepo;
         _unitOfWork = unitOfWork;
+        _firebaseApp = firebaseApp;
         _logger = logger;
     }
 
@@ -33,7 +37,8 @@ public class FirebasePushNotificationSender : IPushNotificationSender
             Data = data
         };
 
-        var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+        var messaging = FirebaseMessaging.GetMessaging(_firebaseApp);
+        var response = await messaging.SendEachForMulticastAsync(message);
 
         if (response.FailureCount == 0) return;
 
