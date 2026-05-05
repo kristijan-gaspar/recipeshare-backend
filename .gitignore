@@ -56,3 +56,4 @@ appsettings.Development.json
 .vs/
 
 firebase-service-account.json
+/RecipeShare.API/firebase-service-account.json
