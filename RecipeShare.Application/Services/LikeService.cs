@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using RecipeShare.Application.DTOs.Likes;
 using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Repositories;
@@ -11,15 +12,19 @@ public class LikeService : ILikeService
     private readonly ILikeRepository _likeRepo;
     private readonly IRecipeRepository _recipeRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<LikeService> _logger;
 
-    public LikeService(ILikeRepository likeRepo, IRecipeRepository recipeRepo, IUnitOfWork unitOfWork)
+    public LikeService(ILikeRepository likeRepo, IRecipeRepository recipeRepo, IUnitOfWork unitOfWork, INotificationService notificationService, ILogger<LikeService> logger)
     {
         _likeRepo = likeRepo;
         _recipeRepo = recipeRepo;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
-    public async Task<ToggleLikeResponse> ToggleAsync(int recipeId, int userId)
+    public async Task<ToggleLikeResponse> ToggleAsync(int recipeId, int userId, string actorUsername)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
         if (recipe == null)
@@ -46,6 +51,12 @@ public class LikeService : ILikeService
             CreatedAt = DateTime.UtcNow
         });
         await _unitOfWork.SaveChangesAsync();
+
+        if (recipe.UserId != userId)
+        {
+            try { await _notificationService.SendLikeNotificationAsync(recipe.UserId, actorUsername, recipe.Title, recipeId); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to send like notification for recipe {RecipeId}.", recipeId); }
+        }
 
         return new ToggleLikeResponse
         {

@@ -94,14 +94,9 @@ public class UserController : ControllerBase
     [HttpPost("{id:int}/follow")]
     public async Task<ActionResult<bool>> ToggleFollow(int id)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrWhiteSpace(userIdClaim))
-            return Unauthorized();
-
-        if (!int.TryParse(userIdClaim, out var currentUserId))
-            return Unauthorized();
-
-        var result = await _followService.ToggleFollowAsync(id, currentUserId);
+        var currentUserId = User.GetUserId();
+        var username = User.GetUsername();
+        var result = await _followService.ToggleFollowAsync(id, currentUserId, username);
         return Ok(result);
     } 
 

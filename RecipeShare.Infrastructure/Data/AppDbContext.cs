@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -8,5 +8,5 @@ namespace RecipeShare.Application.Interfaces.Services;
 
 public interface IFollowService
 {
-    public Task<bool> ToggleFollowAsync(int targetUserId, int currentUserId);
+    public Task<bool> ToggleFollowAsync(int targetUserId, int currentUserId, string followerUsername);
 }

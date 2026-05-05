@@ -1,4 +1,5 @@
 using Mapster;
+using Microsoft.Extensions.Logging;
 using RecipeShare.Application.DTOs.Comments;
 using RecipeShare.Application.DTOs.Common;
 using RecipeShare.Application.Exceptions;
@@ -13,12 +14,16 @@ public class CommentService : ICommentService
     private readonly ICommentRepository _commentRepo;
     private readonly IRecipeRepository _recipeRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<CommentService> _logger;
 
-    public CommentService(ICommentRepository commentRepo, IRecipeRepository recipeRepo, IUnitOfWork unitOfWork)
+    public CommentService(ICommentRepository commentRepo, IRecipeRepository recipeRepo, IUnitOfWork unitOfWork, INotificationService notificationService, ILogger<CommentService> logger)
     {
         _commentRepo = commentRepo;
         _recipeRepo = recipeRepo;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<CursorPagedResponse<CommentResponse>> GetPagedAsync(int recipeId, CommentQueryParameters parameters)
@@ -35,7 +40,7 @@ public class CommentService : ICommentService
         };
     }
 
-    public async Task<CommentResponse> CreateAsync(int recipeId, int userId, CommentRequest request)
+    public async Task<CommentResponse> CreateAsync(int recipeId, int userId, CommentRequest request, string actorUsername)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
         if (recipe == null)
@@ -51,6 +56,12 @@ public class CommentService : ICommentService
 
         await _commentRepo.AddAsync(comment);
         await _unitOfWork.SaveChangesAsync();
+
+        if (recipe.UserId != userId)
+        {
+            try { await _notificationService.SendCommentNotificationAsync(recipe.UserId, actorUsername, recipe.Title, recipeId); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to send comment notification for recipe {RecipeId}.", recipeId); }
+        }
 
         var created = await _commentRepo.GetByIdWithUserAsync(comment.Id);
         return created!.Adapt<CommentResponse>();
