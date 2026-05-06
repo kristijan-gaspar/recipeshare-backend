@@ -188,6 +188,21 @@ public class RecipeService : IRecipeService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task SoftDeleteAsync(int id, int userId, bool isAdmin)
+    {
+        var recipe = await _recipeRepository.GetByIdAsync(id);
+        if (recipe == null || recipe.IsDeleted)
+            throw new NotFoundException("Recipe not found.");
+        if (recipe.UserId != userId && !isAdmin)
+            throw new ForbiddenException("You can only delete your own recipes.");
+
+        recipe.IsDeleted = true;
+        recipe.DeletedAt = DateTime.UtcNow;
+
+        _recipeRepository.Update(recipe);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin)
     {
         var recipe = await _recipeRepository.GetByIdAsync(recipeId);

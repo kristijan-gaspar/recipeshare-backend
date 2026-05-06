@@ -13,4 +13,5 @@ public interface IUserService
     Task DeleteProfileImageAsync(int userId);
     Task<PagedResponse<UserSearchResponse>> SearchUsersAsync(string query, int pageNumber, int pageSize);
     Task<PagedResponse<AdminUserSearchResponse>> SearchUsersForAdminAsync(string query, int page, int pageSize);
+    Task DeleteAccountAsync(int userId, DeleteAccountRequest request, bool isAdmin);
 }

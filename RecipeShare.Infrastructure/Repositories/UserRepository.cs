@@ -34,7 +34,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         var normalizedQuery = query.Trim().ToLower();
 
         return await _dbSet
-            .Where(u => u.Username.Contains(normalizedQuery))
+            .Where(u => u.Username.Contains(normalizedQuery) && !u.IsDeleted)
             .OrderBy(u => u.Username)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -46,6 +46,6 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         var normalizedQuery = query.Trim().ToLower();
 
         return await _context.Users
-            .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery));
+            .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery) && !u.IsDeleted);
     }
 }

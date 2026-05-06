@@ -177,10 +177,31 @@ public class UserService : IUserService
         }
     }
 
+    public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request, bool isAdmin)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+            throw new NotFoundException(UserNotFoundMessage);
+
+        if (!isAdmin)
+        {
+            if (string.IsNullOrWhiteSpace(request.Password))
+                throw new BadRequestException("Password is required.");
+            VerifyCurrentPassword(user, request.Password);
+        }
+
+        user.IsDeleted = true;
+        user.DeletedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     private async Task<User> GetUserOrThrowAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
+        if (user == null || user.IsDeleted)
             throw new NotFoundException(UserNotFoundMessage);
         return user;
     }
