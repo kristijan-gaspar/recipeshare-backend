@@ -14,6 +14,8 @@ public class Recipe
     public bool IsFeatured { get; set; } = false;
     public string? ImageUrl { get; set; }
     public string? ImagePublicId { get; set; }
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

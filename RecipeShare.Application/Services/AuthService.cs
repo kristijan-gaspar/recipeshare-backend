@@ -70,6 +70,9 @@ public class AuthService : IAuthService
         if (user == null)
             throw new UnauthorizedException("Invalid email or password.");
 
+        if (user.IsDeleted)
+            throw new UnauthorizedException("Invalid email or password.");
+
         if (user.IsBlocked)
             throw new ForbiddenException("Your account is blocked.");
 
@@ -106,6 +109,13 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetByIdAsync(storedToken.UserId);
         if (user == null)
             throw new UnauthorizedException("User not found.");
+
+        if (user.IsDeleted)
+        {
+            _refreshTokenRepository.Delete(storedToken);
+            await _unitOfWork.SaveChangesAsync();
+            throw new UnauthorizedException("Invalid or expired refresh token.");
+        }
 
         if (user.IsBlocked)
         {
