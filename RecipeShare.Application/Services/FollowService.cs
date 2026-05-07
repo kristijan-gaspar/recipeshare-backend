@@ -29,7 +29,7 @@ public class FollowService : IFollowService
             throw new BadRequestException("You can't follow yourself");
 
         var targetUser = await _userRepo.GetByIdAsync(targetUserId);
-        if (targetUser == null)
+        if (targetUser == null || targetUser.IsDeleted)
             throw new NotFoundException("User not found");
 
         var existingFollow = await _followRepo.GetByUsersAsync(currentUserId, targetUserId);

@@ -214,7 +214,7 @@ public class UserService : IUserService
     private async Task<User> GetUserOrThrowAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
+        if (user == null || user.IsDeleted)
             throw new NotFoundException(UserNotFoundMessage);
         return user;
     }

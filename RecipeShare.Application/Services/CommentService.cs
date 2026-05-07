@@ -43,7 +43,7 @@ public class CommentService : ICommentService
     public async Task<CommentResponse> CreateAsync(int recipeId, int userId, CommentRequest request, string actorUsername)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
         var comment = new Comment
