@@ -172,6 +172,20 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
         return (items.Take(parameters.PageSize), hasMore);
     }
 
+    public async Task<int> GetCountByUserAsync(int userId)
+    {
+        return await _dbSet.CountAsync(r => r.UserId == userId && !r.IsDeleted);
+    }
+
+    public async Task<IReadOnlyList<Recipe>> GetRecentByUserAsync(int userId, int take)
+    {
+        return await _dbSet
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(take)
+            .ToListAsync();
+    }
+
     public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetExploreAsync(RecipeQueryParameters parameters)
     {
         var query = WithSummaryIncludes();

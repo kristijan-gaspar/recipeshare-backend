@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecipeShare.Application.Common;
-using RecipeShare.Application.DTOs.Users;
-using RecipeShare.Application.Exceptions;
+using RecipeShare.Application.DTOs.Users.Admin;
 using RecipeShare.Application.Interfaces.Services;
 
 namespace RecipeShare.API.Controllers.Admin;
@@ -13,26 +11,38 @@ namespace RecipeShare.API.Controllers.Admin;
 [Authorize(Roles = "Admin")]
 public class AdminUsersController : ControllerBase
 {
-    private readonly IUserService _userService;
+    private readonly IAdminUserService _adminUserService;
 
-    public AdminUsersController(IUserService userService)
+    public AdminUsersController(IAdminUserService adminUserService)
     {
-        _userService = userService;
+        _adminUserService = adminUserService;
     }
 
-    [HttpGet("search")]
-    public async Task<ActionResult<PagedResponse<AdminUserSearchResponse>>> SearchUsers(
-    [FromQuery] string query,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 20)
+    [HttpGet]
+    public async Task<ActionResult<PagedResponse<AdminUserListItemResponse>>> List([FromQuery] AdminUserListQuery query)
     {
-        if (string.IsNullOrWhiteSpace(query))
-            return BadRequest("Name is required");
-
-        if (page < 1 || pageSize < 1)
-            return BadRequest("Invalid pagination parameters.");
-
-        var result = await _userService.SearchUsersForAdminAsync(query, page, pageSize);
+        var result = await _adminUserService.GetUsersAsync(query);
         return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<AdminUserDetailResponse>> Detail(int id)
+    {
+        var result = await _adminUserService.GetUserAsync(id);
+        return Ok(result);
+    }
+
+    [HttpPatch("{id:int}/block")]
+    public async Task<IActionResult> ToggleBlock(int id, [FromBody] AdminToggleBlockRequest request)
+    {
+        await _adminUserService.ToggleBlockAsync(id, request.IsBlocked);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> SoftDelete(int id)
+    {
+        await _adminUserService.SoftDeleteAsync(id);
+        return NoContent();
     }
 }

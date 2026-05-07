@@ -48,4 +48,28 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         return await _context.Users
             .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery) && !u.IsDeleted);
     }
+
+    public async Task<IEnumerable<User>> GetAllPagedAsync(string? query, int pageNumber, int pageSize)
+    {
+        var q = _dbSet.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query))
+            q = q.Where(u => u.Username.Contains(query.Trim().ToLower()));
+
+        return await q
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> CountAllAsync(string? query)
+    {
+        var q = _dbSet.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query))
+            q = q.Where(u => u.Username.Contains(query.Trim().ToLower()));
+
+        return await q.CountAsync();
+    }
 }

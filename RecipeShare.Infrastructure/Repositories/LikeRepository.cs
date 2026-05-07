@@ -37,4 +37,9 @@ internal class LikeRepository : GenericRepository<Like>, ILikeRepository
 
         return liked.ToHashSet();
     }
+
+    public async Task<int> GetCountByUserAsync(int userId)
+    {
+        return await _dbSet.CountAsync(l => l.UserId == userId && !l.Recipe.IsDeleted);
+    }
 }

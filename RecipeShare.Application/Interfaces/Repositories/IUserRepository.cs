@@ -10,4 +10,6 @@ public interface IUserRepository : IGenericRepository<User>
     Task<bool> UsernameExistsAsync(string username);
     Task<List<User>> SearchByUsername(string query, int pageNumber, int pageSize);
     Task<int> CountByUsernameAsync(string query);
+    Task<IEnumerable<User>> GetAllPagedAsync(string? query, int pageNumber, int pageSize);
+    Task<int> CountAllAsync(string? query);
 }
