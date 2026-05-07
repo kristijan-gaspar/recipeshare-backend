@@ -62,15 +62,6 @@ public class RecipesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id:int}/soft")]
-    public async Task<IActionResult> SoftDelete(int id)
-    {
-        var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _recipeService.SoftDeleteAsync(id, userId, isAdmin);
-        return NoContent();
-    }
-
     [HttpPut("{id:int}/image")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImage(int id, IFormFile image)

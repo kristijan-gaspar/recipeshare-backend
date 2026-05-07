@@ -167,30 +167,6 @@ public class RecipeService : IRecipeService
     public async Task DeleteAsync(int id, int userId, bool isAdmin)
     {
         var recipe = await _recipeRepository.GetByIdAsync(id);
-        if (recipe == null)
-            throw new NotFoundException("Recipe not found.");
-        if (recipe.UserId != userId && !isAdmin)
-            throw new ForbiddenException("You can only delete your own recipes.");
-
-        if (!string.IsNullOrWhiteSpace(recipe.ImagePublicId))
-        {
-            try
-            {
-                await _imageStorageService.DeleteAsync(recipe.ImagePublicId);
-            }
-            catch (ImageStorageException ex)
-            {
-                _logger.LogWarning(ex, "Failed to delete recipe image {PublicId} for recipe {RecipeId}.", recipe.ImagePublicId, id);
-            }
-        }
-
-        _recipeRepository.Delete(recipe);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task SoftDeleteAsync(int id, int userId, bool isAdmin)
-    {
-        var recipe = await _recipeRepository.GetByIdAsync(id);
         if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
         if (recipe.UserId != userId && !isAdmin)

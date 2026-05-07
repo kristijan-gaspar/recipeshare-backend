@@ -56,12 +56,4 @@ public class CommentsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("comments/{id:int}/soft")]
-    public async Task<IActionResult> SoftDelete(int id)
-    {
-        var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _commentService.SoftDeleteAsync(id, userId, isAdmin);
-        return NoContent();
-    }
 }

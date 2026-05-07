@@ -87,19 +87,6 @@ public class CommentService : ICommentService
     public async Task DeleteAsync(int commentId, int userId, bool isAdmin)
     {
         var comment = await _commentRepo.GetByIdAsync(commentId);
-        if (comment == null)
-            throw new NotFoundException("Comment not found");
-
-        if (!isAdmin && comment.UserId != userId)
-            throw new ForbiddenException("You can only delete your own comments");
-
-        _commentRepo.Delete(comment);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task SoftDeleteAsync(int commentId, int userId, bool isAdmin)
-    {
-        var comment = await _commentRepo.GetByIdAsync(commentId);
         if (comment == null || comment.IsDeleted)
             throw new NotFoundException("Comment not found");
 
