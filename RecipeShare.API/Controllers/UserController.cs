@@ -4,7 +4,6 @@ using RecipeShare.API.Extensions;
 using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users;
 using RecipeShare.Application.Interfaces.Services;
-using RecipeShare.Domain.Enums;
 
 namespace RecipeShare.API.Controllers;
 
@@ -103,8 +102,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
     {
         var currentUserId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _userService.DeleteAccountAsync(currentUserId, request, isAdmin);
+        await _userService.DeleteAccountAsync(currentUserId, request);
         return NoContent();
     }
 

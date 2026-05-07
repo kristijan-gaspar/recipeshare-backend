@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RecipeShare.Application.DTOs.Users;
 
 public class DeleteAccountRequest
 {
-    public string? Password { get; set; }
+    [Required]
+    public string Password { get; set; } = null!;
 }

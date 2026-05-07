@@ -177,18 +177,13 @@ public class UserService : IUserService
         }
     }
 
-    public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request, bool isAdmin)
+    public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
             throw new NotFoundException(UserNotFoundMessage);
 
-        if (!isAdmin)
-        {
-            if (string.IsNullOrWhiteSpace(request.Password))
-                throw new BadRequestException("Password is required.");
-            VerifyCurrentPassword(user, request.Password);
-        }
+        VerifyCurrentPassword(user, request.Password);
 
         var profileImagePublicId = user.ProfileImagePublicId;
 
