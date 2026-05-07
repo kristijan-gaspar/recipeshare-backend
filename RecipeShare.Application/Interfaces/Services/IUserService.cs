@@ -14,4 +14,5 @@ public interface IUserService
     Task<PagedResponse<UserSearchResponse>> SearchUsersAsync(string query, int pageNumber, int pageSize);
     Task<PagedResponse<AdminUserSearchResponse>> SearchUsersForAdminAsync(string query, int page, int pageSize);
     Task DeleteAccountAsync(int userId, DeleteAccountRequest request);
+    Task SoftDeleteAsync(int userId);
 }

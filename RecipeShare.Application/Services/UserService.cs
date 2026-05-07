@@ -177,6 +177,20 @@ public class UserService : IUserService
         }
     }
 
+    public async Task SoftDeleteAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+            throw new NotFoundException(UserNotFoundMessage);
+
+        user.IsDeleted = true;
+        user.DeletedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
