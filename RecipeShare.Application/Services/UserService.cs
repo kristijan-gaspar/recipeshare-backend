@@ -180,7 +180,7 @@ public class UserService : IUserService
     public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request, bool isAdmin)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null || user.IsDeleted)
+        if (user == null)
             throw new NotFoundException(UserNotFoundMessage);
 
         if (!isAdmin)
@@ -190,18 +190,22 @@ public class UserService : IUserService
             VerifyCurrentPassword(user, request.Password);
         }
 
-        user.IsDeleted = true;
-        user.DeletedAt = DateTime.UtcNow;
+        var profileImagePublicId = user.ProfileImagePublicId;
 
-        _userRepository.Update(user);
-        await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
+        _userRepository.Delete(user);
         await _unitOfWork.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(profileImagePublicId))
+        {
+            try { await _imageStorageService.DeleteAsync(profileImagePublicId); }
+            catch (ImageStorageException ex) { _logger.LogWarning(ex, "Failed to delete profile image {PublicId} for user {UserId}.", profileImagePublicId, userId); }
+        }
     }
 
     private async Task<User> GetUserOrThrowAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null || user.IsDeleted)
+        if (user == null)
             throw new NotFoundException(UserNotFoundMessage);
         return user;
     }
