@@ -84,7 +84,7 @@ public class AdminUserService : IAdminUserService
         return response;
     }
 
-    public async Task ToggleBlockAsync(int userId, bool isBlocked)
+    public async Task ToggleBlockAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -93,15 +93,28 @@ public class AdminUserService : IAdminUserService
         if (user.IsDeleted)
             throw new BadRequestException("Cannot block a deleted user.");
 
-        if (user.IsBlocked == isBlocked)
-            return;
-
-        user.IsBlocked = isBlocked;
+        user.IsBlocked = !user.IsBlocked;
         _userRepository.Update(user);
 
-        if (isBlocked)
+        if (user.IsBlocked)
             await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
 
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RestoreAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new NotFoundException("User not found.");
+
+        if (!user.IsDeleted)
+            throw new BadRequestException("User is not deleted.");
+
+        user.IsDeleted = false;
+        user.DeletedAt = null;
+
+        _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
     }
 

@@ -33,9 +33,9 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPatch("{id:int}/block")]
-    public async Task<IActionResult> ToggleBlock(int id, [FromBody] AdminToggleBlockRequest request)
+    public async Task<IActionResult> ToggleBlock(int id)
     {
-        await _adminUserService.ToggleBlockAsync(id, request.IsBlocked);
+        await _adminUserService.ToggleBlockAsync(id);
         return NoContent();
     }
 
@@ -43,6 +43,13 @@ public class AdminUsersController : ControllerBase
     public async Task<IActionResult> SoftDelete(int id)
     {
         await _adminUserService.SoftDeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        await _adminUserService.RestoreAsync(id);
         return NoContent();
     }
 }
