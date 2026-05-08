@@ -13,5 +13,4 @@ public interface IUserService
     Task DeleteProfileImageAsync(int userId);
     Task<PagedResponse<UserSearchResponse>> SearchUsersAsync(string query, int pageNumber, int pageSize);
     Task DeleteAccountAsync(int userId, DeleteAccountRequest request);
-    Task SoftDeleteAsync(int userId);
 }
