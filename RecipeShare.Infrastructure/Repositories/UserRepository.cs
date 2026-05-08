@@ -16,7 +16,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username)
     {
-        return await _dbSet.FirstOrDefaultAsync(u => u.Username == username);
+        return await _dbSet.FirstOrDefaultAsync(u => u.Username == username && !u.IsDeleted && !u.IsBlocked);
     }
 
     public async Task<bool> EmailExistsAsync(string email)
@@ -34,7 +34,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         var normalizedQuery = query.Trim().ToLower();
 
         return await _dbSet
-            .Where(u => u.Username.Contains(normalizedQuery) && !u.IsDeleted)
+            .Where(u => u.Username.Contains(normalizedQuery) && !u.IsDeleted && !u.IsBlocked)
             .OrderBy(u => u.Username)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -46,7 +46,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         var normalizedQuery = query.Trim().ToLower();
 
         return await _context.Users
-            .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery) && !u.IsDeleted);
+            .CountAsync(u => u.Username.ToLower().Contains(normalizedQuery) && !u.IsDeleted && !u.IsBlocked);
     }
 
     public async Task<IEnumerable<User>> GetAllPagedAsync(string? query, int pageNumber, int pageSize)
