@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.Extensions.Logging;
 using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users.Admin;
@@ -37,17 +38,7 @@ public class AdminUserService : IAdminUserService
         var users = await _userRepository.GetAllPagedAsync(query.Search, query.PageNumber, query.PageSize);
         var totalCount = await _userRepository.CountAllAsync(query.Search);
 
-        var items = users.Select(u => new AdminUserListItemResponse
-        {
-            Id = u.Id,
-            Username = u.Username,
-            Email = u.Email,
-            ProfileImageUrl = u.ProfileImageUrl,
-            CreatedAt = u.CreatedAt,
-            IsBlocked = u.IsBlocked,
-            IsDeleted = u.IsDeleted,
-            DeletedAt = u.DeletedAt
-        }).ToList();
+        var items = users.Adapt<List<AdminUserListItemResponse>>();
 
         return new PagedResponse<AdminUserListItemResponse>
         {
@@ -65,20 +56,7 @@ public class AdminUserService : IAdminUserService
         if (user == null)
             throw new NotFoundException("User not found.");
 
-        var response = new AdminUserDetailResponse
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            Bio = user.Bio,
-            ProfileImageUrl = user.ProfileImageUrl,
-            CreatedAt = user.CreatedAt,
-            IsBlocked = user.IsBlocked,
-            IsDeleted = user.IsDeleted,
-            DeletedAt = user.DeletedAt,
-            Role = user.Role
-        };
-
+        var response = user.Adapt<AdminUserDetailResponse>();
         await _userStatsService.ApplyStatsAsync(response, userId);
 
         return response;
