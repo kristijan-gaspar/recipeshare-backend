@@ -180,4 +180,17 @@ public class AdminRecipeService : IAdminRecipeService
         _recipeRepository.Update(recipe);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task ToggleFeaturedAsync(int recipeId)
+    {
+        var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+        if (recipe == null || recipe.IsDeleted)
+            throw new NotFoundException("Recipe not found.");
+
+        recipe.IsFeatured = !recipe.IsFeatured;
+        recipe.UpdatedAt = DateTime.UtcNow;
+
+        _recipeRepository.Update(recipe);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

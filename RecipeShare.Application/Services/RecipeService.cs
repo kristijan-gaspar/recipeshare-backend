@@ -179,29 +179,6 @@ public class RecipeService : IRecipeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin)
-    {
-        var recipe = await _recipeRepository.GetByIdAsync(recipeId);
-        if (recipe == null || recipe.IsDeleted)
-            throw new NotFoundException("Recipe not found.");
-
-        if (!isAdmin)
-            throw new ForbiddenException("Only admins can feature recipes.");
-
-        if(recipe.IsFeatured && isFeatured)
-            throw new BadRequestException("Recipe is already featured.");
-
-        if (!recipe.IsFeatured && !isFeatured)
-            throw new BadRequestException("Recipe is already not featured.");
-
-        recipe.IsFeatured = isFeatured;
-        recipe.UpdatedAt = DateTime.UtcNow;
-
-        _recipeRepository.Update(recipe);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
-
     public async Task<string> UploadImageAsync(int id, Stream image, string fileName, int userId)
     {
         var extension = Path.GetExtension(fileName);

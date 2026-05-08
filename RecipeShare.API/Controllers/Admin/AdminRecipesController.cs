@@ -45,4 +45,11 @@ public class AdminRecipesController : ControllerBase
         await _adminRecipeService.RestoreAsync(id);
         return NoContent();
     }
+
+    [HttpPatch("{id:int}/featured")]
+    public async Task<IActionResult> ToggleFeatured(int id)
+    {
+        await _adminRecipeService.ToggleFeaturedAsync(id);
+        return NoContent();
+    }
 }

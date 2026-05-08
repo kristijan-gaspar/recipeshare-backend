@@ -9,4 +9,5 @@ public interface IAdminRecipeService
     Task<AdminRecipeDetailResponse> GetRecipeAsync(int recipeId);
     Task SoftDeleteAsync(int recipeId);
     Task RestoreAsync(int recipeId);
+    Task ToggleFeaturedAsync(int recipeId);
 }

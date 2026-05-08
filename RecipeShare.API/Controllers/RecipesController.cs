@@ -4,7 +4,6 @@ using RecipeShare.API.Extensions;
 using RecipeShare.Application.DTOs.Common;
 using RecipeShare.Application.DTOs.Recipes;
 using RecipeShare.Application.Interfaces.Services;
-using RecipeShare.Domain.Enums;
 
 namespace RecipeShare.API.Controllers;
 
@@ -79,28 +78,6 @@ public class RecipesController : ControllerBase
     {
         var userId = User.GetUserId();
         await _recipeService.DeleteImageAsync(id, userId);
-        return NoContent();
-    }
-
-    [HttpPatch("{id}/feature")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Feature(int id)
-    {
-        var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _recipeService.ToggleFeaturedAsync(id, true, userId, isAdmin);
-
-        return NoContent();
-    }
-
-    [HttpPatch("{id}/unfeature")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Unfeature(int id)
-    {
-        var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _recipeService.ToggleFeaturedAsync(id, false, userId, isAdmin);
-
         return NoContent();
     }
 }

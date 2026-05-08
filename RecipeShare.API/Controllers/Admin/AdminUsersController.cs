@@ -32,7 +32,7 @@ public class AdminUsersController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPatch("{id:int}/block")]
+    [HttpPatch("{id:int}/blocked")]
     public async Task<IActionResult> ToggleBlock(int id)
     {
         await _adminUserService.ToggleBlockAsync(id);

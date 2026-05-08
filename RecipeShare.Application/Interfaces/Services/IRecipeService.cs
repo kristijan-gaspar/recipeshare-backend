@@ -12,5 +12,4 @@ public interface IRecipeService
     Task DeleteAsync(int id, int userId);
     Task<string> UploadImageAsync(int id, Stream image, string fileName, int userId);
     Task DeleteImageAsync(int id, int userId);
-    Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin);
 }
