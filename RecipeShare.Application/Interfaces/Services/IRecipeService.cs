@@ -9,7 +9,7 @@ public interface IRecipeService
     Task<RecipeDetailResponse> GetRecipeByIdAsync(int id, int userId);
     Task<int> CreateAsync(CreateRecipeRequest request, int userId);
     Task UpdateAsync(int id, UpdateRecipeRequest request, int userId);
-    Task DeleteAsync(int id, int userId, bool isAdmin);
+    Task DeleteAsync(int id, int userId);
     Task<string> UploadImageAsync(int id, Stream image, string fileName, int userId);
     Task DeleteImageAsync(int id, int userId);
     Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin);

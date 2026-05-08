@@ -84,13 +84,13 @@ public class CommentService : ICommentService
         return comment.Adapt<CommentResponse>();
     }
 
-    public async Task DeleteAsync(int commentId, int userId, bool isAdmin)
+    public async Task DeleteAsync(int commentId, int userId)
     {
         var comment = await _commentRepo.GetByIdAsync(commentId);
         if (comment == null || comment.IsDeleted)
             throw new NotFoundException("Comment not found");
 
-        if (!isAdmin && comment.UserId != userId)
+        if (comment.UserId != userId)
             throw new ForbiddenException("You can only delete your own comments");
 
         comment.IsDeleted = true;

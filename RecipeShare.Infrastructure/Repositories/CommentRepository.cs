@@ -69,4 +69,13 @@ internal class CommentRepository : GenericRepository<Comment>, ICommentRepositor
             .Take(take)
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyList<Comment>> GetAllByRecipeForAdminAsync(int recipeId)
+    {
+        return await _dbSet
+            .Include(c => c.User)
+            .Where(c => c.RecipeId == recipeId)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
 }

@@ -57,8 +57,7 @@ public class RecipesController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _recipeService.DeleteAsync(id, userId, isAdmin);
+        await _recipeService.DeleteAsync(id, userId);
         return NoContent();
     }
 

@@ -164,12 +164,12 @@ public class RecipeService : IRecipeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id, int userId, bool isAdmin)
+    public async Task DeleteAsync(int id, int userId)
     {
         var recipe = await _recipeRepository.GetByIdAsync(id);
         if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
-        if (recipe.UserId != userId && !isAdmin)
+        if (recipe.UserId != userId)
             throw new ForbiddenException("You can only delete your own recipes.");
 
         recipe.IsDeleted = true;

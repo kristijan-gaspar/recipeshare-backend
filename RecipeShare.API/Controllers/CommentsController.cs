@@ -51,8 +51,7 @@ public class CommentsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var userId = User.GetUserId();
-        var isAdmin = User.GetUserRole() == UserRole.Admin;
-        await _commentService.DeleteAsync(id, userId, isAdmin);
+        await _commentService.DeleteAsync(id, userId);
         return NoContent();
     }
 
