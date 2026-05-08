@@ -102,6 +102,24 @@ public class AdminUserService : IAdminUserService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task BlockAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new NotFoundException("User not found.");
+
+        if (user.IsDeleted)
+            throw new BadRequestException("Cannot block a deleted user.");
+
+        if (user.IsBlocked)
+            return;
+
+        user.IsBlocked = true;
+        _userRepository.Update(user);
+        await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task RestoreAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
