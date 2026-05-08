@@ -54,4 +54,19 @@ internal class CommentRepository : GenericRepository<Comment>, ICommentRepositor
             .Select(g => new { RecipeId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RecipeId, x => x.Count);
     }
+
+    public async Task<int> GetCountByUserAsync(int userId)
+    {
+        return await _dbSet.CountAsync(c => c.UserId == userId && !c.IsDeleted);
+    }
+
+    public async Task<IReadOnlyList<Comment>> GetRecentByUserAsync(int userId, int take)
+    {
+        return await _dbSet
+            .Include(c => c.Recipe)
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(take)
+            .ToListAsync();
+    }
 }

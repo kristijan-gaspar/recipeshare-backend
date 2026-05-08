@@ -9,4 +9,6 @@ public interface ICommentRepository : IGenericRepository<Comment>
     Task<Comment?> GetByIdWithUserAsync(int id);
     Task<int> GetCountByRecipeAsync(int recipeId);
     Task<Dictionary<int, int>> GetCountsByRecipeIdsAsync(IEnumerable<int> recipeIds);
+    Task<int> GetCountByUserAsync(int userId);
+    Task<IReadOnlyList<Comment>> GetRecentByUserAsync(int userId, int take);
 }

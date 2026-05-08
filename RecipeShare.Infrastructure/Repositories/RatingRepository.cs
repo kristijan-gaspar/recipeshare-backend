@@ -37,4 +37,9 @@ internal class RatingRepository : GenericRepository<Rating>, IRatingRepository
             .Where(r => r.UserId == userId && recipeIds.Contains(r.RecipeId))
             .ToDictionaryAsync(r => r.RecipeId, r => r.Value);
     }
+
+    public async Task<int> GetCountByUserAsync(int userId)
+    {
+        return await _dbSet.CountAsync(r => r.UserId == userId && !r.Recipe.IsDeleted);
+    }
 }

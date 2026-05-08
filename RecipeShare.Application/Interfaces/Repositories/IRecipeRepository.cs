@@ -18,4 +18,6 @@ public interface IRecipeRepository : IGenericRepository<Recipe>
     Task<(IEnumerable<Recipe> Items, bool HasMore)> GetExploreAsync(RecipeQueryParameters parameters);
 
     Task<(IEnumerable<Recipe> Items, bool HasMore)> GetFeaturedAsync(RecipeQueryParameters parameters);
+    Task<int> GetCountByUserAsync(int userId);
+    Task<IReadOnlyList<Recipe>> GetRecentByUserAsync(int userId, int take);
 }
