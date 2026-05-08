@@ -164,4 +164,20 @@ public class AdminRecipeService : IAdminRecipeService
         _recipeRepository.Update(recipe);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task RestoreAsync(int recipeId)
+    {
+        var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+        if (recipe == null)
+            throw new NotFoundException("Recipe not found.");
+
+        if (!recipe.IsDeleted)
+            throw new BadRequestException("Recipe is not deleted.");
+
+        recipe.IsDeleted = false;
+        recipe.DeletedAt = null;
+
+        _recipeRepository.Update(recipe);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

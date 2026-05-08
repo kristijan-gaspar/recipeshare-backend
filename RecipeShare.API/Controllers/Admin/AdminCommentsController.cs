@@ -22,4 +22,11 @@ public class AdminCommentsController : ControllerBase
         await _adminCommentService.SoftDeleteAsync(id);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        await _adminCommentService.RestoreAsync(id);
+        return NoContent();
+    }
 }

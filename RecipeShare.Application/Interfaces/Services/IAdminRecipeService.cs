@@ -8,4 +8,5 @@ public interface IAdminRecipeService
     Task<PagedResponse<AdminRecipeListItemResponse>> GetRecipesAsync(AdminRecipeListQuery query);
     Task<AdminRecipeDetailResponse> GetRecipeAsync(int recipeId);
     Task SoftDeleteAsync(int recipeId);
+    Task RestoreAsync(int recipeId);
 }

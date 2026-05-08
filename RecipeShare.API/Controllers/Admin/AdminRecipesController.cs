@@ -38,4 +38,11 @@ public class AdminRecipesController : ControllerBase
         await _adminRecipeService.SoftDeleteAsync(id);
         return NoContent();
     }
+
+    [HttpPost("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        await _adminRecipeService.RestoreAsync(id);
+        return NoContent();
+    }
 }
