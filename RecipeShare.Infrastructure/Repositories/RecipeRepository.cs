@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeShare.Application.DTOs.Recipes;
+using RecipeShare.Application.DTOs.Recipes.Admin;
 using RecipeShare.Application.Interfaces.Repositories;
 using RecipeShare.Domain.Entities;
 using RecipeShare.Infrastructure.Data;
@@ -184,6 +185,60 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
             .OrderByDescending(r => r.CreatedAt)
             .Take(take)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Recipe>> GetAllPagedAsync(AdminRecipeListQuery query)
+    {
+        var q = _dbSet
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .Include(r => r.Tags)
+            .AsNoTracking()
+            .AsQueryable();
+
+        q = ApplyAdminFilters(q, query);
+
+        return await q
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> CountAllAsync(AdminRecipeListQuery query)
+    {
+        var q = _dbSet.AsNoTracking().AsQueryable();
+        q = ApplyAdminFilters(q, query);
+        return await q.CountAsync();
+    }
+
+    private static IQueryable<Recipe> ApplyAdminFilters(IQueryable<Recipe> q, AdminRecipeListQuery query)
+    {
+        if (!string.IsNullOrWhiteSpace(query.Search))
+            q = q.Where(r => r.Title.ToLower().Contains(query.Search.ToLower()));
+
+        if (query.CategoryId.HasValue)
+            q = q.Where(r => r.CategoryId == query.CategoryId.Value);
+
+        if (query.IsDeleted.HasValue)
+            q = q.Where(r => r.IsDeleted == query.IsDeleted.Value);
+
+        if (query.IsFeatured.HasValue)
+            q = q.Where(r => r.IsFeatured == query.IsFeatured.Value);
+
+        return q;
+    }
+
+    public async Task<Recipe?> GetDetailedByIdForAdminAsync(int id)
+    {
+        return await _dbSet
+            .Include(r => r.User)
+            .Include(r => r.Category)
+            .Include(r => r.Tags)
+            .Include(r => r.Ingredients.OrderBy(i => i.Order))
+            .Include(r => r.Steps.OrderBy(s => s.Order))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == id);
     }
 
     public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetExploreAsync(RecipeQueryParameters parameters)

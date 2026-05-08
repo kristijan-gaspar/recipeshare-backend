@@ -164,12 +164,12 @@ public class RecipeService : IRecipeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id, int userId, bool isAdmin)
+    public async Task DeleteAsync(int id, int userId)
     {
         var recipe = await _recipeRepository.GetByIdAsync(id);
         if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
-        if (recipe.UserId != userId && !isAdmin)
+        if (recipe.UserId != userId)
             throw new ForbiddenException("You can only delete your own recipes.");
 
         recipe.IsDeleted = true;
@@ -178,29 +178,6 @@ public class RecipeService : IRecipeService
         _recipeRepository.Update(recipe);
         await _unitOfWork.SaveChangesAsync();
     }
-
-    public async Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin)
-    {
-        var recipe = await _recipeRepository.GetByIdAsync(recipeId);
-        if (recipe == null || recipe.IsDeleted)
-            throw new NotFoundException("Recipe not found.");
-
-        if (!isAdmin)
-            throw new ForbiddenException("Only admins can feature recipes.");
-
-        if(recipe.IsFeatured && isFeatured)
-            throw new BadRequestException("Recipe is already featured.");
-
-        if (!recipe.IsFeatured && !isFeatured)
-            throw new BadRequestException("Recipe is already not featured.");
-
-        recipe.IsFeatured = isFeatured;
-        recipe.UpdatedAt = DateTime.UtcNow;
-
-        _recipeRepository.Update(recipe);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
 
     public async Task<string> UploadImageAsync(int id, Stream image, string fileName, int userId)
     {

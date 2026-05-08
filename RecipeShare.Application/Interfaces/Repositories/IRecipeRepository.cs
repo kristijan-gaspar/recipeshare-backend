@@ -1,4 +1,5 @@
 using RecipeShare.Application.DTOs.Recipes;
+using RecipeShare.Application.DTOs.Recipes.Admin;
 using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Application.Interfaces.Repositories;
@@ -20,4 +21,7 @@ public interface IRecipeRepository : IGenericRepository<Recipe>
     Task<(IEnumerable<Recipe> Items, bool HasMore)> GetFeaturedAsync(RecipeQueryParameters parameters);
     Task<int> GetCountByUserAsync(int userId);
     Task<IReadOnlyList<Recipe>> GetRecentByUserAsync(int userId, int take);
+    Task<IEnumerable<Recipe>> GetAllPagedAsync(AdminRecipeListQuery query);
+    Task<int> CountAllAsync(AdminRecipeListQuery query);
+    Task<Recipe?> GetDetailedByIdForAdminAsync(int id);
 }

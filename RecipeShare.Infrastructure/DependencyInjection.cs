@@ -80,6 +80,8 @@ public static class DependencyInjection
         services.AddScoped<IRecipeService, RecipeService>();
         services.AddScoped<IUserStatsService, UserStatsService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IAdminRecipeService, AdminRecipeService>();
+        services.AddScoped<IAdminCommentService, AdminCommentService>();
 
         services.AddScoped<IFollowService, FollowService>();
         services.AddScoped<ILikeService, LikeService>();

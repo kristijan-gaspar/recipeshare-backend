@@ -34,8 +34,8 @@ public class AdminUserService : IAdminUserService
 
     public async Task<PagedResponse<AdminUserListItemResponse>> GetUsersAsync(AdminUserListQuery query)
     {
-        var users = await _userRepository.GetAllPagedAsync(query.Query, query.PageNumber, query.PageSize);
-        var totalCount = await _userRepository.CountAllAsync(query.Query);
+        var users = await _userRepository.GetAllPagedAsync(query.Search, query.PageNumber, query.PageSize);
+        var totalCount = await _userRepository.CountAllAsync(query.Search);
 
         var items = users.Select(u => new AdminUserListItemResponse
         {
