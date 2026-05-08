@@ -27,7 +27,7 @@ public class LikeService : ILikeService
     public async Task<ToggleLikeResponse> ToggleAsync(int recipeId, int userId, string actorUsername)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
         var existing = await _likeRepo.GetByUserAndRecipeAsync(userId, recipeId);

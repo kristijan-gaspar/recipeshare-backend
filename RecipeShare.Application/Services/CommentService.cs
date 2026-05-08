@@ -43,7 +43,7 @@ public class CommentService : ICommentService
     public async Task<CommentResponse> CreateAsync(int recipeId, int userId, CommentRequest request, string actorUsername)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
         var comment = new Comment
@@ -87,13 +87,15 @@ public class CommentService : ICommentService
     public async Task DeleteAsync(int commentId, int userId, bool isAdmin)
     {
         var comment = await _commentRepo.GetByIdAsync(commentId);
-        if (comment == null)
+        if (comment == null || comment.IsDeleted)
             throw new NotFoundException("Comment not found");
 
         if (!isAdmin && comment.UserId != userId)
             throw new ForbiddenException("You can only delete your own comments");
 
-        _commentRepo.Delete(comment);
+        comment.IsDeleted = true;
+        comment.DeletedAt = DateTime.UtcNow;
+
         await _unitOfWork.SaveChangesAsync();
     }
 }

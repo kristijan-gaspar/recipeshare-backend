@@ -24,12 +24,12 @@ internal class FollowRepository : GenericRepository<Follow>, IFollowRepository
 
     public async Task<int> GetFollowerCountAsync(int userId)
     {
-        return await _dbSet.CountAsync(f => f.FollowedId == userId);
+        return await _dbSet.CountAsync(f => f.FollowedId == userId && !f.Follower.IsDeleted);
     }
 
     public async Task<int> GetFollowingCountAsync(int userId)
     {
-        return await _dbSet.CountAsync(f => f.FollowerId == userId);
+        return await _dbSet.CountAsync(f => f.FollowerId == userId && !f.Followed.IsDeleted);
     }
 
     public async Task<bool> ExistsAsync(int followerId, int followedId)

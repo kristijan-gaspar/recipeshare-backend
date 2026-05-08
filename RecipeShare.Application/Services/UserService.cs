@@ -177,10 +177,44 @@ public class UserService : IUserService
         }
     }
 
-    private async Task<User> GetUserOrThrowAsync(int userId)
+    public async Task SoftDeleteAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+            throw new NotFoundException(UserNotFoundMessage);
+
+        user.IsDeleted = true;
+        user.DeletedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _refreshTokenRepository.DeleteAllByUserIdAsync(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteAccountAsync(int userId, DeleteAccountRequest request)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
+            throw new NotFoundException(UserNotFoundMessage);
+
+        VerifyCurrentPassword(user, request.Password);
+
+        var profileImagePublicId = user.ProfileImagePublicId;
+
+        _userRepository.Delete(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(profileImagePublicId))
+        {
+            try { await _imageStorageService.DeleteAsync(profileImagePublicId); }
+            catch (ImageStorageException ex) { _logger.LogWarning(ex, "Failed to delete profile image {PublicId} for user {UserId}.", profileImagePublicId, userId); }
+        }
+    }
+
+    private async Task<User> GetUserOrThrowAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
             throw new NotFoundException(UserNotFoundMessage);
         return user;
     }

@@ -59,7 +59,7 @@ public class CollectionService : ICollectionService
             throw new NotFoundException("Collection not found");
 
         var recipe = await _recipeRepository.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
         var alreadyAdded = collection.CollectionRecipes.Any(cr => cr.RecipeId == recipeId);

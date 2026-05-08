@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RecipeShare.API.Extensions;
 using RecipeShare.Application.Common;
 using RecipeShare.Application.DTOs.Users;
-using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Services;
-using RecipeShare.Application.Services;
-using System.Security.Claims;
 
 namespace RecipeShare.API.Controllers;
 
@@ -100,6 +97,14 @@ public class UserController : ControllerBase
         return Ok(result);
     } 
 
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
+    {
+        var currentUserId = User.GetUserId();
+        await _userService.DeleteAccountAsync(currentUserId, request);
+        return NoContent();
+    }
 
     [HttpGet("search")]
     public async Task<ActionResult<PagedResponse<UserSearchResponse>>> SearchUsers(

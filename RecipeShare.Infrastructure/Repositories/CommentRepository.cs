@@ -14,7 +14,7 @@ internal class CommentRepository : GenericRepository<Comment>, ICommentRepositor
     {
         var query = _dbSet
             .Include(c => c.User)
-            .Where(c => c.RecipeId == recipeId)
+            .Where(c => c.RecipeId == recipeId && !c.IsDeleted)
             .AsQueryable();
 
         if (parameters.Cursor.HasValue)
@@ -38,18 +38,18 @@ internal class CommentRepository : GenericRepository<Comment>, ICommentRepositor
     {
         return await _dbSet
             .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
     }
 
     public async Task<int> GetCountByRecipeAsync(int recipeId)
     {
-        return await _dbSet.CountAsync(c => c.RecipeId == recipeId);
+        return await _dbSet.CountAsync(c => c.RecipeId == recipeId && !c.IsDeleted);
     }
 
     public async Task<Dictionary<int, int>> GetCountsByRecipeIdsAsync(IEnumerable<int> recipeIds)
     {
         return await _dbSet
-            .Where(c => recipeIds.Contains(c.RecipeId))
+            .Where(c => recipeIds.Contains(c.RecipeId) && !c.IsDeleted)
             .GroupBy(c => c.RecipeId)
             .Select(g => new { RecipeId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RecipeId, x => x.Count);

@@ -167,31 +167,22 @@ public class RecipeService : IRecipeService
     public async Task DeleteAsync(int id, int userId, bool isAdmin)
     {
         var recipe = await _recipeRepository.GetByIdAsync(id);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
         if (recipe.UserId != userId && !isAdmin)
             throw new ForbiddenException("You can only delete your own recipes.");
 
-        if (!string.IsNullOrWhiteSpace(recipe.ImagePublicId))
-        {
-            try
-            {
-                await _imageStorageService.DeleteAsync(recipe.ImagePublicId);
-            }
-            catch (ImageStorageException ex)
-            {
-                _logger.LogWarning(ex, "Failed to delete recipe image {PublicId} for recipe {RecipeId}.", recipe.ImagePublicId, id);
-            }
-        }
+        recipe.IsDeleted = true;
+        recipe.DeletedAt = DateTime.UtcNow;
 
-        _recipeRepository.Delete(recipe);
+        _recipeRepository.Update(recipe);
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task ToggleFeaturedAsync(int recipeId, bool isFeatured, int userId, bool isAdmin)
     {
         var recipe = await _recipeRepository.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
 
         if (!isAdmin)
@@ -221,7 +212,7 @@ public class RecipeService : IRecipeService
             throw new BadRequestException("Maximum image size is 5 MB.");
 
         var recipe = await _recipeRepository.GetByIdAsync(id);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
         if (recipe.UserId != userId)
             throw new ForbiddenException("You can only upload images for your own recipes.");
@@ -253,7 +244,7 @@ public class RecipeService : IRecipeService
     public async Task DeleteImageAsync(int id, int userId)
     {
         var recipe = await _recipeRepository.GetByIdAsync(id);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found.");
         if (recipe.UserId != userId)
             throw new ForbiddenException("You can only delete images for your own recipes.");

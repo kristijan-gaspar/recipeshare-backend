@@ -13,6 +13,7 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
     public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetCursorPagedAsync(RecipeQueryParameters parameters)
     {
         var query = _dbSet
+            .Where(r => !r.IsDeleted)
             .Include(r => r.User)
             .Include(r => r.Category)
             .Include(r => r.Tags)
@@ -55,7 +56,7 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
             .Include(r => r.Tags)
             .Include(r => r.Ingredients.OrderBy(i => i.Order))
             .Include(r => r.Steps.OrderBy(s => s.Order))
-            .FirstOrDefaultAsync(r => r.Id == id);
+            .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
     }
 
     public async Task<bool> IsAuthorAsync(int recipeId, int userId)
@@ -77,6 +78,7 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
     private IQueryable<Recipe> WithSummaryIncludes()
     {
         return _dbSet
+            .Where(r => !r.IsDeleted)
             .Include(r => r.User)
             .Include(r => r.Category)
             .Include(r => r.Tags);

@@ -13,6 +13,8 @@ public class User
     public string? Bio { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
     public bool IsBlocked { get; set; } = false;
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();

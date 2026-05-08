@@ -22,7 +22,7 @@ public class RatingService : IRatingService
     public async Task<RatingResponse> RateAsync(int recipeId, int userId, RateRecipeRequest request)
     {
         var recipe = await _recipeRepo.GetByIdAsync(recipeId);
-        if (recipe == null)
+        if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
         if (recipe.UserId == userId)
