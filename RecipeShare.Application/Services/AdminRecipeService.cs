@@ -38,14 +38,9 @@ public class AdminRecipeService : IAdminRecipeService
 
         var ids = recipes.Select(r => r.Id).ToList();
 
-        var likeTask = _likeRepository.GetCountsByRecipeIdsAsync(ids);
-        var ratingTask = _ratingRepository.GetStatsByRecipeIdsAsync(ids);
-        var commentTask = _commentRepository.GetCountsByRecipeIdsAsync(ids);
-        await Task.WhenAll(likeTask, ratingTask, commentTask);
-
-        var likeCounts = likeTask.Result;
-        var ratingStats = ratingTask.Result;
-        var commentCounts = commentTask.Result;
+        var likeCounts = await _likeRepository.GetCountsByRecipeIdsAsync(ids);
+        var ratingStats = await _ratingRepository.GetStatsByRecipeIdsAsync(ids);
+        var commentCounts = await _commentRepository.GetCountsByRecipeIdsAsync(ids);
 
         var items = recipes.Select(r =>
         {
@@ -86,13 +81,10 @@ public class AdminRecipeService : IAdminRecipeService
         if (recipe == null)
             throw new NotFoundException("Recipe not found.");
 
-        var likeTask = _likeRepository.GetCountByRecipeAsync(recipe.Id);
-        var ratingTask = _ratingRepository.GetStatsByRecipeAsync(recipe.Id);
-        var commentCountTask = _commentRepository.GetCountByRecipeAsync(recipe.Id);
-        var commentsTask = _commentRepository.GetAllByRecipeForAdminAsync(recipe.Id);
-        await Task.WhenAll(likeTask, ratingTask, commentCountTask, commentsTask);
-
-        var ratingStats = ratingTask.Result;
+        var likeCount = await _likeRepository.GetCountByRecipeAsync(recipe.Id);
+        var ratingStats = await _ratingRepository.GetStatsByRecipeAsync(recipe.Id);
+        var commentCount = await _commentRepository.GetCountByRecipeAsync(recipe.Id);
+        var comments = await _commentRepository.GetAllByRecipeForAdminAsync(recipe.Id);
 
         return new AdminRecipeDetailResponse
         {
@@ -130,11 +122,11 @@ public class AdminRecipeService : IAdminRecipeService
                 Order = s.Order,
                 Description = s.Description
             }).ToList(),
-            LikeCount = likeTask.Result,
-            CommentCount = commentCountTask.Result,
+            LikeCount = likeCount,
+            CommentCount = commentCount,
             AverageRating = ratingStats.Avg,
             RatingCount = ratingStats.Count,
-            Comments = commentsTask.Result.Select(c => new AdminRecipeCommentItem
+            Comments = comments.Select(c => new AdminRecipeCommentItem
             {
                 Id = c.Id,
                 Content = c.Content,
