@@ -2,7 +2,7 @@ namespace RecipeShare.Application.DTOs.Recipes.Admin;
 
 public class AdminRecipeListQuery
 {
-    public string? Query { get; set; }
+    public string? Search { get; set; }
     public int? CategoryId { get; set; }
     public bool? IsDeleted { get; set; }
     public bool? IsFeatured { get; set; }

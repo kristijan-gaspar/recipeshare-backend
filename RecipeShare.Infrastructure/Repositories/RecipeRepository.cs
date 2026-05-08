@@ -214,8 +214,8 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
 
     private static IQueryable<Recipe> ApplyAdminFilters(IQueryable<Recipe> q, AdminRecipeListQuery query)
     {
-        if (!string.IsNullOrWhiteSpace(query.Query))
-            q = q.Where(r => r.Title.ToLower().Contains(query.Query.ToLower()));
+        if (!string.IsNullOrWhiteSpace(query.Search))
+            q = q.Where(r => r.Title.ToLower().Contains(query.Search.ToLower()));
 
         if (query.CategoryId.HasValue)
             q = q.Where(r => r.CategoryId == query.CategoryId.Value);
