@@ -1,7 +1,6 @@
+using Mapster;
 using RecipeShare.Application.Common;
-using RecipeShare.Application.DTOs.Comments;
 using RecipeShare.Application.DTOs.Comments.Admin;
-using RecipeShare.Application.DTOs.Recipes;
 using RecipeShare.Application.DTOs.Recipes.Admin;
 using RecipeShare.Application.Exceptions;
 using RecipeShare.Application.Interfaces.Repositories;
@@ -45,24 +44,12 @@ public class AdminRecipeService : IAdminRecipeService
         var items = recipes.Select(r =>
         {
             ratingStats.TryGetValue(r.Id, out var stats);
-            return new AdminRecipeListItemResponse
-            {
-                Id = r.Id,
-                Title = r.Title,
-                ImageUrl = r.ImageUrl,
-                IsFeatured = r.IsFeatured,
-                IsDeleted = r.IsDeleted,
-                DeletedAt = r.DeletedAt,
-                CreatedAt = r.CreatedAt,
-                Difficulty = r.Difficulty,
-                AuthorId = r.User.Id,
-                AuthorUsername = r.User.Username,
-                CategoryName = r.Category.Name,
-                LikeCount = likeCounts.GetValueOrDefault(r.Id),
-                CommentCount = commentCounts.GetValueOrDefault(r.Id),
-                AverageRating = stats.Avg,
-                RatingCount = stats.Count
-            };
+            var item = r.Adapt<AdminRecipeListItemResponse>();
+            item.LikeCount = likeCounts.GetValueOrDefault(r.Id);
+            item.CommentCount = commentCounts.GetValueOrDefault(r.Id);
+            item.AverageRating = stats.Avg;
+            item.RatingCount = stats.Count;
+            return item;
         }).ToList();
 
         return new PagedResponse<AdminRecipeListItemResponse>
@@ -86,62 +73,13 @@ public class AdminRecipeService : IAdminRecipeService
         var commentCount = await _commentRepository.GetCountByRecipeAsync(recipe.Id);
         var comments = await _commentRepository.GetAllByRecipeForAdminAsync(recipe.Id);
 
-        return new AdminRecipeDetailResponse
-        {
-            Id = recipe.Id,
-            Title = recipe.Title,
-            Description = recipe.Description,
-            ImageUrl = recipe.ImageUrl,
-            IsFeatured = recipe.IsFeatured,
-            IsDeleted = recipe.IsDeleted,
-            DeletedAt = recipe.DeletedAt,
-            CreatedAt = recipe.CreatedAt,
-            UpdatedAt = recipe.UpdatedAt,
-            Difficulty = recipe.Difficulty,
-            PrepTimeMinutes = recipe.PrepTimeMinutes,
-            CookTimeMinutes = recipe.CookTimeMinutes,
-            Servings = recipe.Servings,
-            CategoryId = recipe.CategoryId,
-            CategoryName = recipe.Category.Name,
-            Author = new RecipeAuthorResponse
-            {
-                Id = recipe.User.Id,
-                Username = recipe.User.Username,
-                ProfileImageUrl = recipe.User.ProfileImageUrl
-            },
-            Tags = recipe.Tags.Select(t => t.Name).ToList(),
-            Ingredients = recipe.Ingredients.OrderBy(i => i.Order).Select(i => new IngredientResponse
-            {
-                Name = i.Name,
-                Quantity = i.Quantity,
-                Unit = i.Unit,
-                Order = i.Order
-            }).ToList(),
-            Steps = recipe.Steps.OrderBy(s => s.Order).Select(s => new StepResponse
-            {
-                Order = s.Order,
-                Description = s.Description
-            }).ToList(),
-            LikeCount = likeCount,
-            CommentCount = commentCount,
-            AverageRating = ratingStats.Avg,
-            RatingCount = ratingStats.Count,
-            Comments = comments.Select(c => new AdminRecipeCommentItem
-            {
-                Id = c.Id,
-                Content = c.Content,
-                IsDeleted = c.IsDeleted,
-                DeletedAt = c.DeletedAt,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                Author = new CommentAuthorResponse
-                {
-                    Id = c.User.Id,
-                    Username = c.User.Username,
-                    ProfileImageUrl = c.User.ProfileImageUrl
-                }
-            }).ToList()
-        };
+        var response = recipe.Adapt<AdminRecipeDetailResponse>();
+        response.LikeCount = likeCount;
+        response.CommentCount = commentCount;
+        response.AverageRating = ratingStats.Avg;
+        response.RatingCount = ratingStats.Count;
+        response.Comments = comments.Adapt<List<AdminRecipeCommentItem>>();
+        return response;
     }
 
     public async Task SoftDeleteAsync(int recipeId)

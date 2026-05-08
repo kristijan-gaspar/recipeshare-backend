@@ -1,6 +1,9 @@
 using Mapster;
 using RecipeShare.Application.DTOs.Comments;
+using RecipeShare.Application.DTOs.Comments.Admin;
 using RecipeShare.Application.DTOs.Recipes;
+using RecipeShare.Application.DTOs.Recipes.Admin;
+using RecipeShare.Application.DTOs.Reports;
 using RecipeShare.Domain.Entities;
 
 namespace RecipeShare.Application.Mappings;
@@ -38,5 +41,53 @@ public static class MappingConfig
                 Username = src.User.Username,
                 ProfileImageUrl = src.User.ProfileImageUrl
             });
+
+
+        TypeAdapterConfig<Recipe, AdminRecipeListItemResponse>.NewConfig()
+            .Map(dest => dest.AuthorId, src => src.User.Id)
+            .Map(dest => dest.AuthorUsername, src => src.User.Username)
+            .Map(dest => dest.CategoryName, src => src.Category.Name);
+
+        TypeAdapterConfig<Recipe, AdminRecipeDetailResponse>.NewConfig()
+            .Map(dest => dest.Author, src => new RecipeAuthorResponse
+            {
+                Id = src.UserId,
+                Username = src.User.Username,
+                ProfileImageUrl = src.User.ProfileImageUrl
+            })
+            .Map(dest => dest.CategoryName, src => src.Category.Name)
+            .Map(dest => dest.Tags, src => src.Tags.Select(t => t.Name).ToList())
+            .Map(dest => dest.Ingredients, src => src.Ingredients.OrderBy(i => i.Order).ToList())
+            .Map(dest => dest.Steps, src => src.Steps.OrderBy(s => s.Order).ToList());
+
+        TypeAdapterConfig<Comment, AdminRecipeCommentItem>.NewConfig()
+            .Map(dest => dest.Author, src => new CommentAuthorResponse
+            {
+                Id = src.UserId,
+                Username = src.User.Username,
+                ProfileImageUrl = src.User.ProfileImageUrl
+            });
+
+        TypeAdapterConfig<Report, ReportResponse>.NewConfig()
+            .Map(dest => dest.TargetType, src => src.TargetType.ToString())
+            .Map(dest => dest.ReporterUsername, src => src.Reporter.Username)
+            .Map(dest => dest.ReportedUsername, src => src.ReportedUser.Username)
+            .Map(dest => dest.Reason, src => src.Reason.ToString())
+            .Map(dest => dest.Status, src => src.Status.ToString());
+
+        TypeAdapterConfig<Report, ReportDetailResponse>.NewConfig()
+            .Map(dest => dest.TargetType, src => src.TargetType.ToString())
+            .Map(dest => dest.ReporterUsername, src => src.Reporter.Username)
+            .Map(dest => dest.ReporterId, src => src.ReporterId)
+            .Map(dest => dest.ReportedUsername, src => src.ReportedUser.Username)
+            .Map(dest => dest.ReportedUserId, src => src.ReportedUserId)
+            .Map(dest => dest.Reason, src => src.Reason.ToString())
+            .Map(dest => dest.Status, src => src.Status.ToString())
+            .Map(dest => dest.ContentAction, src => src.ContentAction.ToString())
+            .Map(dest => dest.UserAction, src => src.UserAction.ToString())
+            .Map(dest => dest.ResolvedByAdminUsername, src => src.ResolvedByAdmin != null
+                ? src.ResolvedByAdmin.Username
+                : null)
+            .Ignore(dest => dest.TargetContent);
     }
 }

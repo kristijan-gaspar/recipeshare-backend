@@ -18,4 +18,22 @@ public class LookupsController : ControllerBase
     {
         return Ok(Enum.GetNames<DifficultyLevel>());
     }
+
+    [HttpGet("report-reasons")]
+    public ActionResult<IEnumerable<string>> GetReportReasons()
+    {
+        return Ok(Enum.GetNames<ReportReason>());
+    }
+
+    [HttpGet("report-target-types")]
+    public ActionResult<IEnumerable<string>> GetReportTargetTypes()
+    {
+        return Ok(Enum.GetNames<ReportTargetType>());
+    }
+
+    [HttpGet("admin-actions")]
+    public ActionResult<IEnumerable<string>> GetAdminActions()
+    {
+        return Ok(Enum.GetNames<AdminAction>());
+    }
 }

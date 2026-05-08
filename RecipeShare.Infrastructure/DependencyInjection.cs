@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ICommentRepository, CommentRepository>();
 
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
 
         // Firebase
         services.Configure<FirebaseSettings>(config.GetSection("Firebase"));
@@ -95,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IDeviceTokenService, DeviceTokenService>();
         services.AddScoped<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IReportService, ReportService>();
 
         return services;
     }
