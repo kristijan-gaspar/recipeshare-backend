@@ -14,10 +14,10 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
     public async Task<(IEnumerable<Recipe> Items, bool HasMore)> GetCursorPagedAsync(RecipeQueryParameters parameters)
     {
         var query = _dbSet
-            .Where(r => !r.IsDeleted && !r.User.IsDeleted && !r.User.IsBlocked)
             .Include(r => r.User)
             .Include(r => r.Category)
             .Include(r => r.Tags)
+            .Where(r => !r.IsDeleted && !r.User.IsDeleted && !r.User.IsBlocked)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(parameters.Search))

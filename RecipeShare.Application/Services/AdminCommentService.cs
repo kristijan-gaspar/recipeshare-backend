@@ -24,6 +24,7 @@ public class AdminCommentService : IAdminCommentService
         comment.IsDeleted = true;
         comment.DeletedAt = DateTime.UtcNow;
 
+        _commentRepository.Update(comment);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -39,6 +40,7 @@ public class AdminCommentService : IAdminCommentService
         comment.IsDeleted = false;
         comment.DeletedAt = null;
 
+        _commentRepository.Update(comment);
         await _unitOfWork.SaveChangesAsync();
     }
 }
