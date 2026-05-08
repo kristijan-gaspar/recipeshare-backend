@@ -96,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IDeviceTokenService, DeviceTokenService>();
         services.AddScoped<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IReportService, ReportService>();
 
         return services;
     }
