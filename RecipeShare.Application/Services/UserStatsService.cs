@@ -28,27 +28,23 @@ public class UserStatsService : IUserStatsService
 
     public async Task ApplyStatsAsync(AdminUserDetailResponse response, int userId)
     {
-        var recipeCountTask = _recipeRepository.GetCountByUserAsync(userId);
-        var commentCountTask = _commentRepository.GetCountByUserAsync(userId);
-        var likeCountTask = _likeRepository.GetCountByUserAsync(userId);
-        var ratingCountTask = _ratingRepository.GetCountByUserAsync(userId);
-        var followerCountTask = _followRepository.GetFollowerCountAsync(userId);
-        var followingCountTask = _followRepository.GetFollowingCountAsync(userId);
-        var recentRecipesTask = _recipeRepository.GetRecentByUserAsync(userId, 5);
-        var recentCommentsTask = _commentRepository.GetRecentByUserAsync(userId, 5);
+        var recipeCount = await _recipeRepository.GetCountByUserAsync(userId);
+        var commentCount = await _commentRepository.GetCountByUserAsync(userId);
+        var likeCount = await _likeRepository.GetCountByUserAsync(userId);
+        var ratingCount = await _ratingRepository.GetCountByUserAsync(userId);
+        var followerCount = await _followRepository.GetFollowerCountAsync(userId);
+        var followingCount = await _followRepository.GetFollowingCountAsync(userId);
+        var recentRecipes = await _recipeRepository.GetRecentByUserAsync(userId, 5);
+        var recentComments = await _commentRepository.GetRecentByUserAsync(userId, 5);
 
-        await Task.WhenAll(
-            recipeCountTask, commentCountTask, likeCountTask, ratingCountTask,
-            followerCountTask, followingCountTask, recentRecipesTask, recentCommentsTask);
+        response.RecipeCount = recipeCount;
+        response.CommentCount = commentCount;
+        response.LikeCount = likeCount;
+        response.RatingCount = ratingCount;
+        response.FollowerCount = followerCount;
+        response.FollowingCount = followingCount;
 
-        response.RecipeCount = recipeCountTask.Result;
-        response.CommentCount = commentCountTask.Result;
-        response.LikeCount = likeCountTask.Result;
-        response.RatingCount = ratingCountTask.Result;
-        response.FollowerCount = followerCountTask.Result;
-        response.FollowingCount = followingCountTask.Result;
-
-        response.RecentRecipes = recentRecipesTask.Result.Select(r => new AdminUserRecipeItem
+        response.RecentRecipes = recentRecipes.Select(r => new AdminUserRecipeItem
         {
             Id = r.Id,
             Title = r.Title,
@@ -59,7 +55,7 @@ public class UserStatsService : IUserStatsService
             DeletedAt = r.DeletedAt
         }).ToList();
 
-        response.RecentComments = recentCommentsTask.Result.Select(c => new AdminUserCommentItem
+        response.RecentComments = recentComments.Select(c => new AdminUserCommentItem
         {
             Id = c.Id,
             Content = c.Content,
