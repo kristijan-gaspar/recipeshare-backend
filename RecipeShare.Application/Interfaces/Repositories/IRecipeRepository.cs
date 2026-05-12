@@ -24,4 +24,6 @@ public interface IRecipeRepository : IGenericRepository<Recipe>
     Task<IEnumerable<Recipe>> GetAllPagedAsync(AdminRecipeListQuery query);
     Task<int> CountAllAsync(AdminRecipeListQuery query);
     Task<Recipe?> GetDetailedByIdForAdminAsync(int id);
+    Task<int> CountRecipesAsync();
+    Task<List<int>> GetMostPopularRecipeIdsAsync(int take);
 }

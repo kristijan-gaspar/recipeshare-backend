@@ -72,4 +72,23 @@ public class UserRepository : GenericRepository<User>, IUserRepository
 
         return await q.CountAsync();
     }
+
+    public async Task<int> CountUsersAsync()
+    {
+        return await _dbSet.CountAsync(u => !u.IsDeleted && !u.IsBlocked);
+    }
+
+    public async Task<List<int>> GetMostActiveUserIdsAsync(int take)
+    {
+        return await _dbSet
+            .Where(u => !u.IsDeleted && !u.IsBlocked)
+            .Where(u => u.Recipes.Any())
+            .OrderByDescending(u => u.Recipes.Count)
+            .ThenByDescending(u => u.Recipes.SelectMany(r => r.Likes).Count())
+            .ThenByDescending(u => u.Recipes.SelectMany(r => r.Ratings).Count())
+            .ThenByDescending(u => u.Id)
+            .Take(take)
+            .Select(u => u.Id)
+            .ToListAsync();
+    }
 }

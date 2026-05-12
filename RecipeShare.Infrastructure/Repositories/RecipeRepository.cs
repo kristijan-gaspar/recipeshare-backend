@@ -297,4 +297,23 @@ public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
 
         return (items.Take(parameters.PageSize), hasMore);
     }
+
+    public async Task<int> CountRecipesAsync()
+    {
+        return await _dbSet.CountAsync(r => !r.IsDeleted && !r.User.IsDeleted && !r.User.IsBlocked);
+    }
+
+    public async Task<List<int>> GetMostPopularRecipeIdsAsync(int take)
+    {
+        return await _dbSet
+            .Where(r => !r.IsDeleted && !r.User.IsDeleted && !r.User.IsBlocked)            
+            .OrderByDescending(r => r.Likes.Count)
+            .ThenByDescending(r => r.Ratings.Any()
+                ? r.Ratings.Average(x => (double)x.Value) : 0)
+            .ThenByDescending(r => r.Ratings.Count)
+            .ThenByDescending(r => r.Id)
+            .Take(take)
+            .Select(r => r.Id)
+            .ToListAsync();
+    }
 }

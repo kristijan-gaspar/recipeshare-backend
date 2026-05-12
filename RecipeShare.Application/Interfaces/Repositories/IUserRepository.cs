@@ -12,4 +12,6 @@ public interface IUserRepository : IGenericRepository<User>
     Task<int> CountByUsernameAsync(string query);
     Task<IEnumerable<User>> GetAllPagedAsync(string? query, int pageNumber, int pageSize);
     Task<int> CountAllAsync(string? query);
+    Task<int> CountUsersAsync();
+    Task<List<int>> GetMostActiveUserIdsAsync(int take);
 }
