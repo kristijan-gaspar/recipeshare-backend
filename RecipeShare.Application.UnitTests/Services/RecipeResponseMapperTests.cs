@@ -49,7 +49,7 @@ public class RecipeResponseMapperTests
         var result = await _sut.ToCursorPagedAsync(recipes, true, 1);
 
         // Assert
-        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.Items.Count());
         Assert.True(result.HasMore);
         Assert.Equal(2, result.NextCursor);
     }

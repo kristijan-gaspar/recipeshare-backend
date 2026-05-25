@@ -240,7 +240,7 @@ public class AdminUserServiceTests
         await _sut.SoftDeleteAsync(1);
 
         // Assert
-        _imageStorageMock.Verify(s => s.DeleteAsync("public-id-123"), Times.Once);
+        _imageStorageMock.Verify(s => s.DeleteAsync("public-id-123", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public class AdminUserServiceTests
         // Arrange
         var user = new User { Id = 1, ProfileImagePublicId = "public-id-123" };
         _userRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
-        _imageStorageMock.Setup(s => s.DeleteAsync("public-id-123"))
+        _imageStorageMock.Setup(s => s.DeleteAsync("public-id-123", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new RecipeShare.Application.Exceptions.ImageStorageException("storage error"));
 
         // Act

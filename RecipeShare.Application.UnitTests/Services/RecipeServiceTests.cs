@@ -299,7 +299,7 @@ public class RecipeServiceTests
         await _sut.DeleteImageAsync(1, 5);
 
         // Assert
-        _imageStorageMock.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+        _imageStorageMock.Verify(s => s.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

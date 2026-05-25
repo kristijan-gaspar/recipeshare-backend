@@ -66,7 +66,7 @@ public class CommentServiceTests
         var result = await _sut.GetPagedAsync(1, new CommentQueryParameters());
 
         // Assert
-        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.Items.Count());
         Assert.True(result.HasMore);
         Assert.Equal(2, result.NextCursor);
     }
