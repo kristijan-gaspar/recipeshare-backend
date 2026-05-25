@@ -44,12 +44,12 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.HasOne(r => r.Reporter)
             .WithMany()
             .HasForeignKey(r => r.ReporterId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(r => r.ReportedUser)
             .WithMany()
             .HasForeignKey(r => r.ReportedUserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(r => r.ResolvedByAdmin)
             .WithMany()
