@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "build": {
+      "commands": [ "dotnet publish RecipeShare.API/RecipeShare.API.csproj -c Release -o out" ]
+    }
+  },
+  "deploy": {
+    "startCommand": "dotnet out/RecipeShare.API.dll"
+  }
+}
