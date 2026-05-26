@@ -1,5 +1,6 @@
 {
   "$schema": "https://schema.railpack.com",
+  "provider": "dotnet",
   "steps": {
     "build": {
       "commands": [ "dotnet publish RecipeShare.API/RecipeShare.API.csproj -c Release -o out" ]
