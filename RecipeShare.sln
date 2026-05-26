@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11801.241 oobstable
+VisualStudioVersion = 18.5.11801.241
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeShare.API", "RecipeShare.API\RecipeShare.API.csproj", "{F5B906F5-28BE-4729-8F1A-E5AD68253CBE}"
 EndProject
@@ -12,11 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeShare.Infrastructure", "RecipeShare.Infrastructure\RecipeShare.Infrastructure.csproj", "{0F01299B-E405-49D2-9E0A-3039F1CA8CBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeShare.Application.UnitTests", "RecipeShare.Application.UnitTests\RecipeShare.Application.UnitTests.csproj", "{F050724A-ECBD-4FD8-A7F4-1F0705AE967B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CF19263F-7F0C-4235-B27E-E5AF9D362147}"
-	ProjectSection(SolutionItems) = preProject
-		railpack.json = railpack.json
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
