@@ -50,11 +50,17 @@ public static class DependencyInjection
         services.AddScoped<IReportRepository, ReportRepository>();
 
         // Firebase
-        services.Configure<FirebaseSettings>(config.GetSection("Firebase"));
         services.AddSingleton(_ =>
         {
-            var settings = config.GetSection("Firebase").Get<FirebaseSettings>()!;
-            var credential = GoogleCredential.FromFile(settings.CredentialsFilePath);
+            var credentialsJson = config["Firebase:CredentialsJson"];
+            GoogleCredential credential;
+            if (!string.IsNullOrEmpty(credentialsJson))
+                credential = CredentialFactory.FromJson<ServiceAccountCredential>(credentialsJson).ToGoogleCredential();
+            else
+            {
+                var path = config["Firebase:CredentialsFilePath"]!;
+                credential = CredentialFactory.FromFile<ServiceAccountCredential>(path).ToGoogleCredential();
+            }
             return FirebaseApp.Create(new AppOptions { Credential = credential });
         });
 
