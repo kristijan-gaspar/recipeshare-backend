@@ -30,6 +30,9 @@ public class LikeService : ILikeService
         if (recipe == null || recipe.IsDeleted)
             throw new NotFoundException("Recipe not found");
 
+        if (recipe.UserId == userId)
+            throw new BadRequestException("You cannot like your own recipe");
+
         var existing = await _likeRepo.GetByUserAndRecipeAsync(userId, recipeId);
 
         if (existing != null)
