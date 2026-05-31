@@ -88,21 +88,14 @@ public class LikeServiceTests
     }
 
     [Fact]
-    public async Task ToggleAsync_WhenOwnRecipeLiked_DoesNotSendNotification()
+    public async Task ToggleAsync_WhenOwnRecipeLiked_ThrowsBadRequestException()
     {
         // Arrange
         var recipe = new Recipe { Id = 1, UserId = 1 };
         _recipeRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(recipe);
-        _likeRepoMock.Setup(r => r.GetByUserAndRecipeAsync(1, 1)).ReturnsAsync((Like?)null);
-        _likeRepoMock.Setup(r => r.GetCountByRecipeAsync(1)).ReturnsAsync(0);
 
-        // Act
-        await _sut.ToggleAsync(1, 1, "actor");
-
-        // Assert
-        _notificationServiceMock.Verify(
-            n => n.SendLikeNotificationAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()),
-            Times.Never);
+        // Act & Assert
+        await Assert.ThrowsAsync<BadRequestException>(() => _sut.ToggleAsync(1, 1, "actor"));
     }
 
     [Fact]
